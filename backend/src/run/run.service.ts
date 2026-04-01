@@ -19,17 +19,13 @@ interface RunFunctionParams {
 
 @Injectable()
 export class RunService {
-  async runFunction({
+  runFunction({
     wasmFile,
     inputJson,
     functionType,
-  }: RunFunctionParams): Promise<RunResponse> {
+  }: RunFunctionParams): RunResponse {
     const startTime = process.hrtime.bigint();
     const errors: string[] = [];
-
-    if (!wasmFile?.buffer?.length) {
-      errors.push('A .wasm file is required.');
-    }
 
     if (wasmFile?.originalname && !wasmFile.originalname.endsWith('.wasm')) {
       errors.push('The uploaded file must have a .wasm extension.');
@@ -56,7 +52,7 @@ export class RunService {
     }
 
     try {
-      const output = await this.executeMockRunner({
+      const output = this.executeMockRunner({
         functionType: functionType as SupportedFunctionType,
         parsedInput: parsedInput ?? {},
         wasmFile,
@@ -72,7 +68,7 @@ export class RunService {
   }
 
   // This mock keeps the API stable while the real WASI runtime is added later.
-  private async executeMockRunner({
+  private executeMockRunner({
     functionType,
     parsedInput,
     wasmFile,
@@ -80,7 +76,7 @@ export class RunService {
     functionType: SupportedFunctionType;
     parsedInput: Record<string, unknown>;
     wasmFile?: UploadedWasmFile;
-  }): Promise<Record<string, unknown>> {
+  }): Record<string, unknown> {
     if (parsedInput.forceError === true) {
       throw new Error('Forced runner error triggered by input.forceError.');
     }
@@ -88,8 +84,9 @@ export class RunService {
     const baseMetadata = {
       mockRunner: true,
       functionType,
-      wasmFileName: wasmFile?.originalname ?? 'unknown.wasm',
+      wasmFileName: wasmFile?.originalname ?? 'mock-runner.wasm',
       wasmSizeBytes: wasmFile?.size ?? wasmFile?.buffer?.length ?? 0,
+      usedUploadedWasm: Boolean(wasmFile?.buffer?.length),
     };
 
     switch (functionType) {

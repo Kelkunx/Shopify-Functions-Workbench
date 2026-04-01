@@ -36,6 +36,7 @@ Current limitation:
 
 - the backend execution layer is still mocked
 - the API contract is stable, but real WASI execution is the next step
+- because the runner is mocked, testing without a real `.wasm` file is supported
 
 ## Tech Stack
 
@@ -104,11 +105,19 @@ This starts:
 - frontend on `http://localhost:3000`
 - backend on `http://localhost:3001`
 
+For a lighter development mode with lower memory pressure:
+
+```bash
+npm run dev:light
+```
+
 You can also run each app separately:
 
 ```bash
 npm run dev:frontend
 npm run dev:backend
+npm run dev:frontend:light
+npm run dev:backend:light
 ```
 
 Open `http://localhost:3000` in the browser.
@@ -127,8 +136,11 @@ From the repository root:
 
 ```bash
 npm run dev
+npm run dev:light
 npm run dev:frontend
 npm run dev:backend
+npm run dev:frontend:light
+npm run dev:backend:light
 npm run build
 npm run lint
 npm run test
@@ -172,3 +184,9 @@ npm run lint
 - add Shopify Function input templates per function type
 - improve backend validation for malformed Shopify payloads
 - support loading and saving local test fixtures
+
+## Performance Notes
+
+- `npm run dev` uses webpack on the frontend instead of Turbopack to avoid the process explosion seen in this environment
+- `npm run dev:light` disables frontend dev source maps and server fast refresh to reduce CPU and memory usage further
+- the backend dev server uses Nest watch mode with the `swc` builder, which is lighter than the default TypeScript watch path

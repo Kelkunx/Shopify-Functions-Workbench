@@ -41,17 +41,15 @@ export function RunnerWorkspace() {
     functionType;
 
   async function handleRun() {
-    if (!wasmFile) {
-      setRequestError("Select a .wasm file before running the function.");
-      setResponse(null);
-      return;
-    }
-
     setIsRunning(true);
     setRequestError(null);
 
     const formData = new FormData();
-    formData.append("wasm", wasmFile);
+
+    if (wasmFile) {
+      formData.append("wasm", wasmFile);
+    }
+
     formData.append("inputJson", inputJson);
     formData.append("functionType", functionType);
 
@@ -131,6 +129,10 @@ export function RunnerWorkspace() {
               }}
               className="block w-full rounded-[8px] border border-border bg-surface-strong px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-[6px] file:border-0 file:bg-stone-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-stone-50"
             />
+            <p className="text-xs leading-5 text-muted">
+              Optional for now. If no file is selected, the mocked runner still lets
+              you test the request flow locally.
+            </p>
           </label>
 
           <label className="space-y-2">
@@ -177,7 +179,7 @@ export function RunnerWorkspace() {
           <div className="mt-auto rounded-[8px] border border-border bg-surface-strong px-3 py-3 text-sm text-muted">
             <div className="font-medium text-foreground">{selectedFunctionLabel}</div>
             <div className="mt-1 break-all">
-              {wasmFile ? wasmFile.name : "No Wasm file selected"}
+              {wasmFile ? wasmFile.name : "Mock runner only"}
             </div>
           </div>
         </aside>

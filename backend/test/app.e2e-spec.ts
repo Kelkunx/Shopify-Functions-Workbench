@@ -4,6 +4,12 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
+interface RunResponseBody {
+  success: boolean;
+  errors: string[];
+  output: Record<string, unknown>;
+}
+
 describe('RunController (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -31,9 +37,11 @@ describe('RunController (e2e)', () => {
       .attach('wasm', Buffer.from('wasm'), 'function.wasm')
       .expect(200)
       .expect(({ body }) => {
-        expect(body.success).toBe(true);
-        expect(body.errors).toEqual([]);
-        expect(body.output).toMatchObject({
+        const responseBody = body as RunResponseBody;
+
+        expect(responseBody.success).toBe(true);
+        expect(responseBody.errors).toEqual([]);
+        expect(responseBody.output).toMatchObject({
           mockRunner: true,
           functionType: 'product-discount',
         });

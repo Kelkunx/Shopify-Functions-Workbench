@@ -111,7 +111,7 @@ export function RunResultsPanel({
             <div className="text-xs text-muted">
               Cleanup: {formatDuration(runResponse.timings.shopifyPhases.cleanupMs)}
             </div>
-            <div className="rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-stone-800">
               Local timings are indicative only. They include your local runner
               environment and may differ from Shopify production runtime
               performance.

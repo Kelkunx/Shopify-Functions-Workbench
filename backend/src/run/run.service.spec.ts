@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs';
+import { MockFunctionRunnerService } from './mock-function-runner.service';
 import { RunRequestParserService } from './run-request-parser.service';
 import { RunService } from './run.service';
 import { ShopifyFunctionRunnerService } from './shopify-function-runner.service';
@@ -21,7 +22,11 @@ describe('RunService', () => {
     } as unknown as jest.Mocked<ShopifyFunctionRunnerService>;
 
     requestParser = new RunRequestParserService();
-    service = new RunService(requestParser, shopifyRunner);
+    service = new RunService(
+      new MockFunctionRunnerService(),
+      requestParser,
+      shopifyRunner,
+    );
   });
 
   it('returns a mock success response for a supported function', async () => {

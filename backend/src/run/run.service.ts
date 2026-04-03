@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import type { Stats } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { type SupportedFunctionType } from './dto/run-request.dto';
+import { MockFunctionRunnerService } from './mock-function-runner.service';
 import { RunRequestParserService } from './run-request-parser.service';
 import { ShopifyFunctionRunnerService } from './shopify-function-runner.service';
 import { type RunFunctionParams } from './types/run-function-params.type';
@@ -18,6 +18,7 @@ interface TemporaryWasmArtifact {
 @Injectable()
 export class RunService {
   constructor(
+    private readonly mockFunctionRunner: MockFunctionRunnerService,
     private readonly runRequestParser: RunRequestParserService,
     private readonly shopifyFunctionRunner: ShopifyFunctionRunnerService,
   ) {}
@@ -53,7 +54,7 @@ export class RunService {
             target: parsedRequest.trimmedTarget!,
             wasmFile: parsedRequest.wasmFile,
           })
-        : this.executeMockRunner({
+        : this.mockFunctionRunner.run({
             functionType: parsedRequest.normalizedFunctionType,
             requestedFunctionType: parsedRequest.requestedFunctionType,
             parsedInput: parsedRequest.parsedInput,
@@ -129,76 +130,6 @@ export class RunService {
     }
   }
 
-  // This mock remains useful for the UI before a developer wires real Shopify metadata.
-  private executeMockRunner({
-    functionType,
-    requestedFunctionType,
-    parsedInput,
-    wasmFile,
-  }: {
-    functionType: SupportedFunctionType;
-    requestedFunctionType?: string;
-    parsedInput: Record<string, unknown>;
-    wasmFile?: UploadedWasmFile;
-  }): Record<string, unknown> {
-    if (parsedInput.forceError === true) {
-      throw new Error('Forced runner error triggered by input.forceError.');
-    }
-
-    const baseMetadata = {
-      mockRunner: true,
-      functionType,
-      requestedFunctionType:
-        requestedFunctionType && requestedFunctionType !== functionType
-          ? requestedFunctionType
-          : undefined,
-      wasmFileName: wasmFile?.originalname ?? 'mock-runner.wasm',
-      wasmSizeBytes: wasmFile?.size ?? wasmFile?.buffer?.length ?? 0,
-      usedUploadedWasm: Boolean(wasmFile?.buffer?.length),
-    };
-
-    switch (functionType) {
-      case 'product-discount':
-        return {
-          ...baseMetadata,
-          discounts: [],
-          discountApplicationStrategy: 'FIRST',
-          inputSummary: {
-            cartLines: this.getNestedArrayLength(parsedInput, 'cart', 'lines'),
-          },
-        };
-      case 'delivery-customization':
-        return {
-          ...baseMetadata,
-          operations: [],
-          inputSummary: {
-            deliveryGroups: this.getNestedArrayLength(
-              parsedInput,
-              'cart',
-              'deliveryGroups',
-            ),
-          },
-        };
-      case 'cart-transform':
-        return {
-          ...baseMetadata,
-          operations: [],
-          inputSummary: {
-            cartLines: this.getNestedArrayLength(parsedInput, 'cart', 'lines'),
-          },
-        };
-      case 'custom':
-        return {
-          ...baseMetadata,
-          output: {},
-          inputSummary: {
-            topLevelKeys: Object.keys(parsedInput).length,
-          },
-          echo: parsedInput,
-        };
-    }
-  }
-
   private buildResponse(
     success: boolean,
     output: Record<string, unknown>,
@@ -214,25 +145,6 @@ export class RunService {
       executionTimeMs: Number(executionTimeMs.toFixed(3)),
       errors,
     };
-  }
-
-  private getNestedArrayLength(
-    value: Record<string, unknown>,
-    parentKey: string,
-    childKey: string,
-  ): number {
-    const parentValue = value[parentKey];
-
-    if (
-      !parentValue ||
-      typeof parentValue !== 'object' ||
-      !Array.isArray((parentValue as Record<string, unknown>)[childKey])
-    ) {
-      return 0;
-    }
-
-    return ((parentValue as Record<string, unknown>)[childKey] as unknown[])
-      .length;
   }
 
   private async assertDirectoryExists(functionDir: string): Promise<void> {

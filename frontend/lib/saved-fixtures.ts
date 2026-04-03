@@ -14,30 +14,36 @@ export interface SavedFixture {
   target: string;
 }
 
-const storageKey = "shopify-functions-local-runner-fixtures";
+const currentStorageKey = "shopify-functions-workbench-fixtures";
+const legacyStorageKeys = ["shopify-functions-local-runner-fixtures"];
 
 export function loadSavedFixtures(): SavedFixture[] {
   if (typeof window === "undefined") {
     return [];
   }
 
-  const rawValue = window.localStorage.getItem(storageKey);
+  const rawCurrentValue = window.localStorage.getItem(currentStorageKey);
+  const fixturesFromCurrentStorage = parseSavedFixtures(rawCurrentValue);
 
-  if (!rawValue) {
-    return [];
+  if (fixturesFromCurrentStorage) {
+    return fixturesFromCurrentStorage;
   }
 
-  try {
-    const parsedValue = JSON.parse(rawValue) as SavedFixture[];
+  for (const legacyStorageKey of legacyStorageKeys) {
+    const rawLegacyValue = window.localStorage.getItem(legacyStorageKey);
+    const fixturesFromLegacyStorage = parseSavedFixtures(rawLegacyValue);
 
-    if (!Array.isArray(parsedValue)) {
-      return [];
+    if (!fixturesFromLegacyStorage) {
+      continue;
     }
 
-    return parsedValue;
-  } catch {
-    return [];
+    persistSavedFixtures(fixturesFromLegacyStorage);
+    window.localStorage.removeItem(legacyStorageKey);
+
+    return fixturesFromLegacyStorage;
   }
+
+  return [];
 }
 
 export function persistSavedFixtures(fixtures: SavedFixture[]) {
@@ -45,5 +51,19 @@ export function persistSavedFixtures(fixtures: SavedFixture[]) {
     return;
   }
 
-  window.localStorage.setItem(storageKey, JSON.stringify(fixtures));
+  window.localStorage.setItem(currentStorageKey, JSON.stringify(fixtures));
+}
+
+function parseSavedFixtures(rawValue: string | null): SavedFixture[] | null {
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as SavedFixture[];
+
+    return Array.isArray(parsedValue) ? parsedValue : null;
+  } catch {
+    return null;
+  }
 }

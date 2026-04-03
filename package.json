@@ -1,5 +1,5 @@
 {
-  "name": "shopify-functions-local-runner",
+  "name": "shopify-functions-workbench",
   "private": true,
   "workspaces": [
     "backend",

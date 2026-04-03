@@ -118,6 +118,7 @@ describe('RunService', () => {
       schemaPath: '/tmp/schema.graphql',
       targeting: {
         'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
           inputQueryPath: '/tmp/input.graphql',
         },
       },
@@ -148,7 +149,7 @@ describe('RunService', () => {
     expect(getFunctionInfoMock).toHaveBeenCalledWith(__dirname);
     expect(runFunctionMock).toHaveBeenCalledWith(
       {
-        export: 'run',
+        export: 'purchase-product-discount-run',
         expectedOutput: {},
         input: { cart: { lines: [] } },
         target: 'purchase.product-discount.run',
@@ -172,6 +173,7 @@ describe('RunService', () => {
       schemaPath: '/tmp/schema.graphql',
       targeting: {
         'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
           inputQueryPath: '/tmp/input.graphql',
         },
       },
@@ -210,6 +212,46 @@ describe('RunService', () => {
         force: true,
         recursive: true,
       },
+    );
+  });
+
+  it('falls back to the target export when the submitted exportName is still run', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    runFunctionMock.mockResolvedValue({
+      error: null,
+      result: {
+        output: {
+          discounts: [],
+        },
+      },
+    });
+
+    await service.runFunction({
+      exportName: 'run',
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(runFunctionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        export: 'purchase-product-discount-run',
+      }),
+      '/tmp/function-runner',
+      '/tmp/function.wasm',
+      '/tmp/input.graphql',
+      '/tmp/schema.graphql',
     );
   });
 });

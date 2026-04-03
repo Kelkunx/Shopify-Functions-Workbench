@@ -87,7 +87,8 @@ export class RunService {
 
     const functionInfo =
       await this.shopifyFunctionRunner.getFunctionInfo(functionDir);
-    const queryPath = functionInfo.targeting[target]?.inputQueryPath;
+    const targetConfig = functionInfo.targeting[target];
+    const queryPath = targetConfig?.inputQueryPath;
 
     if (!queryPath) {
       throw new Error(
@@ -95,7 +96,7 @@ export class RunService {
       );
     }
 
-    const exportToRun = exportName?.trim() || 'run';
+    const exportToRun = this.resolveExportName(exportName, targetConfig?.export);
     const temporaryWasmArtifact = await this.writeTemporaryWasmFile(wasmFile);
     const wasmPath = temporaryWasmArtifact?.wasmPath ?? functionInfo.wasmPath;
 
@@ -128,6 +129,27 @@ export class RunService {
           .catch(() => undefined);
       }
     }
+  }
+
+  private resolveExportName(
+    exportName: string | undefined,
+    targetExportName: string | undefined,
+  ): string {
+    const trimmedExportName = exportName?.trim();
+
+    if (!targetExportName) {
+      return trimmedExportName || 'run';
+    }
+
+    if (
+      !trimmedExportName ||
+      trimmedExportName === 'run' ||
+      trimmedExportName === `run${targetExportName}`
+    ) {
+      return targetExportName;
+    }
+
+    return trimmedExportName;
   }
 
   private buildResponse(

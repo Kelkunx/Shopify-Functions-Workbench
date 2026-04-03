@@ -15,6 +15,7 @@
     "build": "npm run build -w backend && npm run build -w frontend",
     "build:backend": "npm run build -w backend",
     "build:frontend": "npm run build -w frontend",
+    "benchmark:shopify": "node scripts/benchmark-shopify-run.mjs",
     "lint": "npm run lint -w backend && npm run lint -w frontend",
     "lint:backend": "npm run lint -w backend",
     "lint:frontend": "npm run lint -w frontend",

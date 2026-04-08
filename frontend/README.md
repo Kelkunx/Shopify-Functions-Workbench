@@ -16,12 +16,14 @@ The frontend provides the workbench UI to:
 - benchmark repeated runs from the UI
 - call the local backend runner
 - inspect output, errors, and execution time
-- inspect detailed local phase timings for Shopify runs
+- open a details drawer for local phase timings, benchmark breakdowns, and diagnostics
 
 ## Main Files
 
 - `app/page.tsx`: page entry point
 - `components/runner-workspace.tsx`: main three-panel UI
+- `components/runner/run-inspector.tsx`: result inspector shell and drawer state
+- `components/runner/run-details-drawer.tsx`: detailed timings, diagnostics, and benchmark breakdowns
 - `components/json-editor.tsx`: Monaco wrapper
 - `lib/function-templates.ts`: supported function types and sample payloads
 - `lib/saved-fixtures.ts`: browser-local fixture persistence helpers
@@ -51,3 +53,6 @@ npm test
 - for Shopify runs, the UI shows a note that local timings are indicative only and may differ from Shopify production runtime performance
 - only run trusted Wasm locally; the workbench UI is not a hardened sandbox for untrusted Wasm
 - Shopify is the default serious path in the UI; mock mode remains available as an assistive workflow
+- the desktop layout keeps setup on the left, the JSON editor in the center, and the latest result on the right
+- benchmark and saved scenarios are collapsed by default to reduce noise
+- output actions are rendered directly inside the output block instead of the section header

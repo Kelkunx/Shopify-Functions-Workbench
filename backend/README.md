@@ -15,6 +15,8 @@ The backend exposes a local `POST /run` endpoint used by the frontend to:
 - return detailed local timing phases for debugging Shopify runner overhead
 - optionally benchmark repeated runs on the same endpoint
 
+The frontend now keeps detailed timings and diagnostics in a drawer, so the backend timing and diagnostic payloads remain important even when they are not always visible in the default inspector.
+
 The backend now supports two paths:
 
 - mock mode for quick local DX without Shopify metadata

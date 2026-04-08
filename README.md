@@ -41,13 +41,14 @@ Implemented:
   - `cart-transform`
   - `custom`
 - frontend single-page runner UI
+- fixed-height desktop workspace with three panels
 - Monaco JSON editor
 - explicit mock vs Shopify runner modes
 - saved local scenarios in the browser
 - scenario import/export as JSON for the current runner mode
 - structured error details and Shopify runner diagnostics
 - benchmark inputs and benchmark result panels
-- result, error, and execution time panels
+- run result inspector with inline output actions and a details drawer
 
 Current limitation:
 
@@ -193,6 +194,13 @@ Used when `functionDir` and `target` are provided.
 - scenarios can be renamed, deleted, exported as JSON, and imported on another machine or browser
 - legacy fixture storage from the old project name is migrated automatically in the browser
 - scenarios are intended for fast local iteration, not source-controlled test cases
+
+## Interface Notes
+
+- the desktop UI is organized as `setup / input / result`
+- benchmark and saved scenarios are collapsed by default to keep the primary flow readable
+- output actions are available directly inside the output frame
+- detailed timings, benchmark breakdown, and Shopify diagnostics live behind the result drawer instead of the main inspector
 
 ## Development Commands
 

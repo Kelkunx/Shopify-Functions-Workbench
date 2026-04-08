@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { type ReactNode, useId, useRef, useState } from "react";
 import { functionTypes, type FunctionType } from "@/lib/function-templates";
 import type { RunnerMode, SavedFixture } from "@/lib/saved-fixtures";
 import { formatTimestamp } from "../runner-workspace.helpers";
@@ -9,6 +9,7 @@ import {
   InlineNote,
   SecondaryButton,
   SelectInput,
+  SectionToggleButton,
   SidebarPanel,
   SidebarSection,
   TextInput,
@@ -230,7 +231,8 @@ export function RunnerControlsPanel({
         </div>
       </SidebarSection>
 
-      <SidebarSection
+      <CollapsibleRailSection
+        defaultOpen={false}
         description="Optional repeated runs."
         title="2. Benchmark"
       >
@@ -257,10 +259,11 @@ export function RunnerControlsPanel({
             value={currentBenchmarkWarmup}
           />
         </Field>
-      </SidebarSection>
+      </CollapsibleRailSection>
 
       <SavedFixturesSection
         currentScenarioName={currentFixtureName}
+        defaultOpen={false}
         onDeleteSavedFixture={onDeleteSavedFixture}
         onExportFixtures={onExportFixtures}
         onRenameScenario={onRenameScenario}
@@ -275,8 +278,43 @@ export function RunnerControlsPanel({
   );
 }
 
+function CollapsibleRailSection({
+  children,
+  defaultOpen,
+  description,
+  title,
+}: {
+  children: ReactNode;
+  defaultOpen: boolean;
+  description: string;
+  title: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const contentId = useId();
+
+  return (
+    <SidebarSection
+      actions={
+        <SectionToggleButton
+          aria-controls={contentId}
+          aria-expanded={isOpen}
+          aria-label={`${isOpen ? "Hide" : "Show"} ${title}`}
+          onClick={() => setIsOpen((currentValue) => !currentValue)}
+        >
+          {isOpen ? "Hide" : "Show"}
+        </SectionToggleButton>
+      }
+      description={description}
+      title={title}
+    >
+      {isOpen ? <div id={contentId}>{children}</div> : null}
+    </SidebarSection>
+  );
+}
+
 function SavedFixturesSection({
   currentScenarioName,
+  defaultOpen,
   onDeleteSavedFixture,
   onExportFixtures,
   onRenameScenario,
@@ -288,6 +326,7 @@ function SavedFixturesSection({
   transferFeedback,
 }: {
   currentScenarioName: string;
+  defaultOpen: boolean;
   onDeleteSavedFixture: (savedFixtureId: string) => void;
   onExportFixtures: () => void;
   onRenameScenario: (savedFixture: SavedFixture) => void;
@@ -298,70 +337,86 @@ function SavedFixturesSection({
   savedFixtures: SavedFixture[];
   transferFeedback: string;
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const importInputReference = useRef<HTMLInputElement | null>(null);
+  const contentId = useId();
 
   return (
     <SidebarSection
+      actions={
+        <SectionToggleButton
+          aria-controls={contentId}
+          aria-expanded={isOpen}
+          aria-label={`${isOpen ? "Hide" : "Show"} saved scenarios`}
+          onClick={() => setIsOpen((currentValue) => !currentValue)}
+        >
+          {isOpen ? "Hide" : "Show"}
+        </SectionToggleButton>
+      }
       description="Optional saved scenarios."
       title="Saved scenarios"
     >
-      <Field
-        helper="Save overwrites by name in the same mode."
-        label="Scenario name"
-      >
-        <div className="flex gap-2">
-          <TextInput
-            className="min-w-0 flex-1"
-            onChange={(event) => onScenarioNameChange(event.target.value)}
-            placeholder="black-friday-check"
-            type="text"
-            value={currentScenarioName}
-          />
-          <SecondaryButton onClick={onScenarioSave} type="button">
-            Save
-          </SecondaryButton>
-        </div>
-      </Field>
+      {isOpen ? (
+        <div id={contentId} className="space-y-4">
+          <Field
+            helper="Save overwrites by name in the same mode."
+            label="Scenario name"
+          >
+            <div className="flex gap-2">
+              <TextInput
+                className="min-w-0 flex-1"
+                onChange={(event) => onScenarioNameChange(event.target.value)}
+                placeholder="black-friday-check"
+                type="text"
+                value={currentScenarioName}
+              />
+              <SecondaryButton onClick={onScenarioSave} type="button">
+                Save
+              </SecondaryButton>
+            </div>
+          </Field>
 
-      <div className="flex gap-2">
-        <SecondaryButton onClick={onExportFixtures} type="button">
-          Export
-        </SecondaryButton>
-        <SecondaryButton
-          onClick={() => importInputReference.current?.click()}
-          type="button"
-        >
-          Import
-        </SecondaryButton>
-        <input
-          accept="application/json,.json"
-          className="hidden"
-          onChange={(event) => {
-            onImportFixtures(event.target.files?.[0] ?? null);
-            event.target.value = "";
-          }}
-          ref={importInputReference}
-          type="file"
-        />
-      </div>
-
-      {transferFeedback ? <InlineNote>{transferFeedback}</InlineNote> : null}
-
-      <div className="space-y-2">
-        {savedFixtures.length === 0 ? (
-          <EmptyState>No saved scenarios.</EmptyState>
-        ) : (
-          savedFixtures.map((savedFixture) => (
-            <SavedFixtureCard
-              key={savedFixture.id}
-              onDelete={() => onDeleteSavedFixture(savedFixture.id)}
-              onLoad={() => onLoadFixture(savedFixture)}
-              onRename={() => onRenameScenario(savedFixture)}
-              savedFixture={savedFixture}
+          <div className="flex gap-2">
+            <SecondaryButton onClick={onExportFixtures} type="button">
+              Export
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={() => importInputReference.current?.click()}
+              type="button"
+            >
+              Import
+            </SecondaryButton>
+            <input
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(event) => {
+                onImportFixtures(event.target.files?.[0] ?? null);
+                event.target.value = "";
+              }}
+              ref={importInputReference}
+              type="file"
             />
-          ))
-        )}
-      </div>
+          </div>
+
+          {transferFeedback ? <InlineNote>{transferFeedback}</InlineNote> : null}
+
+          <div className="space-y-2">
+            {savedFixtures.length === 0 ? (
+              <EmptyState>No saved scenarios.</EmptyState>
+            ) : (
+              savedFixtures.map((savedFixture) => (
+                <SavedFixtureCard
+                  key={savedFixture.id}
+                  onDelete={() => onDeleteSavedFixture(savedFixture.id)}
+                  onLoad={() => onLoadFixture(savedFixture)}
+                  onRename={() => onRenameScenario(savedFixture)}
+                  savedFixture={savedFixture}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      ) : null}
     </SidebarSection>
   );
 }

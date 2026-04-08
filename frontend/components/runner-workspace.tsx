@@ -3,7 +3,7 @@
 import { RunnerControlsPanel } from "./runner/controls-panel";
 import { EditorPanel } from "./runner/editor-panel";
 import { ExpandedOutputModal } from "./runner/expanded-output-modal";
-import { RunResultsPanel } from "./runner/results-panel";
+import { RunInspector } from "./runner/run-inspector";
 import { WorkspaceHeader } from "./runner/workspace-header";
 import { useRunnerWorkspaceController } from "./use-runner-workspace-controller";
 
@@ -57,7 +57,7 @@ export function RunnerWorkspace() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <div className="flex min-h-screen flex-col bg-background text-foreground lg:h-screen lg:overflow-hidden">
         <WorkspaceHeader
           activeExecutionKind={activeExecutionKind}
           isRunInFlight={isRunInFlight}
@@ -69,8 +69,8 @@ export function RunnerWorkspace() {
           runnerMode={activeRunnerMode}
         />
 
-        <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:px-6 lg:py-6">
-          <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[292px_minmax(0,1fr)_348px]">
+        <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:overflow-hidden lg:px-6 lg:py-6">
+          <div className="grid min-h-0 flex-1 gap-4 xl:h-full xl:grid-cols-[296px_minmax(0,1fr)_388px]">
             <RunnerControlsPanel
               currentBenchmarkIterations={currentBenchmarkIterations}
               currentBenchmarkWarmup={currentBenchmarkWarmup}
@@ -111,7 +111,7 @@ export function RunnerWorkspace() {
               runnerMode={activeRunnerMode}
             />
 
-            <RunResultsPanel
+            <RunInspector
               copyFeedback={outputCopyFeedback}
               onCopyOutput={copyRunOutput}
               onExpandOutput={() => setIsOutputModalOpen(true)}

@@ -9,6 +9,8 @@ export const runnerUiClassNames = {
     "rounded-md border border-dashed border-border bg-surface px-3 py-3 text-sm text-muted",
   fieldHelper: "mt-1.5 text-xs leading-5 text-muted",
   fieldLabel: "mb-1.5 text-sm font-medium text-foreground",
+  iconActionButton:
+    "flex h-8 w-8 items-center justify-center rounded-md border border-border bg-white text-muted transition-colors hover:border-border-strong hover:bg-stone-100 hover:text-foreground disabled:opacity-50",
   primaryButton:
     "rounded-md bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-strong disabled:cursor-not-allowed disabled:bg-amber-300",
   resultsActionButton:
@@ -21,6 +23,8 @@ export const runnerUiClassNames = {
   sectionWrapper: "border-b border-border px-5 py-5 last:border-b-0",
   secondaryButton:
     "rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-border-strong hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60",
+  sectionToggleButton:
+    "inline-flex items-center gap-1 rounded-md border border-border bg-white px-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-border-strong hover:bg-stone-100",
   selectInput:
     "h-10 w-full rounded-md border border-border bg-white px-3 text-sm outline-none transition-colors focus:border-border-strong",
   textInput:

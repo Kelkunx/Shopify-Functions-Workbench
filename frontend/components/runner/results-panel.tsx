@@ -4,11 +4,11 @@ import {
   CodeBlock,
   DangerBox,
   EmptyState,
+  IconActionButton,
   InlineNote,
   Metric,
   SidebarPanel,
   SidebarSection,
-  SmallActionButton,
 } from "./runner-ui-primitives";
 
 function formatDuration(durationMs: number | undefined) {
@@ -19,16 +19,56 @@ function formatDuration(durationMs: number | undefined) {
   return `${durationMs.toFixed(3)} ms`;
 }
 
+function CopyIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+    >
+      <rect height="12" rx="2" width="12" x="9" y="9" />
+      <path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4" />
+    </svg>
+  );
+}
+
+function ExpandIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+    >
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M9 21H3v-6" />
+      <path d="M3 21 14 10" />
+    </svg>
+  );
+}
+
 export function RunResultsPanel({
   copyFeedback,
   onCopyOutput,
   onExpandOutput,
+  onOpenDetails,
   runRequestError,
   runResponse,
 }: {
   copyFeedback: string;
   onCopyOutput: () => void;
   onExpandOutput: () => void;
+  onOpenDetails: () => void;
   runRequestError: string;
   runResponse: RunResponse | null;
 }) {
@@ -58,10 +98,26 @@ export function RunResultsPanel({
   const currentExecutionTimeLabel = benchmarkResult
     ? "Last run time"
     : "Execution time";
+  const hasDetails =
+    Boolean(runResponse) || Boolean(runRequestError);
+  const primaryErrorMessage = runRequestError || runResponse?.errorDetails[0]?.message || "";
+  const additionalErrorCount = runRequestError
+    ? runResponse?.errorDetails.length ?? 0
+    : Math.max((runResponse?.errorDetails.length ?? 0) - 1, 0);
 
   return (
     <SidebarPanel>
       <SidebarSection
+        actions={
+          <button
+            className="text-sm font-medium text-foreground underline-offset-2 transition-colors hover:text-primary disabled:text-muted"
+            disabled={!hasDetails}
+            onClick={onOpenDetails}
+            type="button"
+          >
+            Details
+          </button>
+        }
         description="Latest run status."
         title="Run result"
       >
@@ -95,179 +151,62 @@ export function RunResultsPanel({
             value={runResponse ? Object.keys(runResponse.output).length.toString() : "0"}
           />
         </div>
-        {runRequestError ? <DangerBox>{runRequestError}</DangerBox> : null}
       </SidebarSection>
 
       <SidebarSection
+        actions={
+          <div className="flex items-center gap-2">
+            <IconActionButton
+              aria-label="Copy output"
+              disabled={!runResponse}
+              onClick={onCopyOutput}
+              title="Copy output"
+            >
+              <CopyIcon />
+            </IconActionButton>
+            <IconActionButton
+              aria-label="Expand output"
+              disabled={!runResponse}
+              onClick={onExpandOutput}
+              title="Expand output"
+            >
+              <ExpandIcon />
+            </IconActionButton>
+          </div>
+        }
         description="Latest runner output."
         title="Output"
       >
-        <div className="flex items-center justify-between gap-2">
-          <InlineNote>
-            {runResponse
-              ? "Ready to inspect."
-              : "Run to inspect output."}
-          </InlineNote>
-          <div className="flex items-center gap-2">
-            {copyFeedback ? (
-              <span className="text-xs text-muted">{copyFeedback}</span>
-            ) : null}
-            <SmallActionButton
-              disabled={!runResponse}
-              onClick={onCopyOutput}
-              type="button"
-            >
-              Copy
-            </SmallActionButton>
-            <SmallActionButton
-              disabled={!runResponse}
-              onClick={onExpandOutput}
-              type="button"
-            >
-              Expand
-            </SmallActionButton>
-          </div>
-        </div>
-        <CodeBlock>
+        <InlineNote>
+          {runResponse ? "Ready to inspect." : "Run to inspect output."}
+        </InlineNote>
+        {copyFeedback ? <InlineNote>{copyFeedback}</InlineNote> : null}
+        <CodeBlock className="max-h-72">
           {runResponse ? formatOutputJson(runResponse.output) : "{\n  \n}"}
         </CodeBlock>
       </SidebarSection>
 
       <SidebarSection description="Runner errors." title="Errors">
-        {runResponse?.errorDetails.length ? (
-          <div className="space-y-2">
-            {runResponse.errorDetails.map((errorDetail) => (
-              <DangerBox key={`${errorDetail.code}-${errorDetail.message}`}>
-                <div className="font-medium">{errorDetail.message}</div>
-                <div className="mt-1 text-xs uppercase tracking-[0.02em] text-red-700">
-                  {errorDetail.code} • {errorDetail.source}
-                </div>
-              </DangerBox>
-            ))}
-          </div>
+        {primaryErrorMessage ? (
+          <DangerBox>
+            <div className="font-medium">{primaryErrorMessage}</div>
+            {additionalErrorCount > 0 ? (
+              <div className="mt-1 text-xs text-red-700">
+                {additionalErrorCount} more error
+                {additionalErrorCount > 1 ? "s" : ""} in details.
+              </div>
+            ) : null}
+          </DangerBox>
         ) : (
           <EmptyState>No runner errors.</EmptyState>
         )}
-      </SidebarSection>
 
-      <SidebarSection
-        description="Local timing breakdown."
-        title="Timings"
-      >
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-          <Metric
-            label="Parse"
-            value={runResponse ? formatDuration(runResponse.timings.parseMs) : "Not run"}
-          />
-          <Metric
-            label="Execute"
-            value={
-              runResponse ? formatDuration(runResponse.timings.executionMs) : "Not run"
-            }
-          />
-          <Metric
-            label="Dir check"
-            value={
-              runResponse
-                ? formatDuration(runResponse.timings.shopifyPhases?.directoryCheckMs)
-                : "Not run"
-            }
-          />
-          <Metric
-            label="Function info"
-            value={
-              runResponse
-                ? formatDuration(runResponse.timings.shopifyPhases?.functionInfoMs)
-                : "Not run"
-            }
-          />
-          <Metric
-            label="Wasm prep"
-            value={
-              runResponse
-                ? formatDuration(runResponse.timings.shopifyPhases?.wasmPreparationMs)
-                : "Not run"
-            }
-          />
-          <Metric
-            label="Runner"
-            value={
-              runResponse
-                ? formatDuration(runResponse.timings.shopifyPhases?.functionRunnerMs)
-                : "Not run"
-            }
-          />
-        </div>
         {runResponse?.timings.shopifyPhases ? (
-          <div className="space-y-3">
-            <div className="text-xs text-muted">
-              Cleanup: {formatDuration(runResponse.timings.shopifyPhases.cleanupMs)}
-            </div>
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-stone-800">
-              Local timings are indicative only and may differ from Shopify runtime.
-            </div>
-          </div>
-        ) : (
-          <EmptyState>Detailed timings appear for Shopify runs.</EmptyState>
-        )}
-      </SidebarSection>
-
-      <SidebarSection
-        description="Repeated local runs."
-        title="Benchmark"
-      >
-        {benchmarkResult ? (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              <Metric
-                label="Measured avg"
-                value={formatDuration(benchmarkResult.summary.averageTotalMs)}
-              />
-              <Metric
-                label="Runner avg"
-                value={formatDuration(benchmarkResult.summary.averageRunnerMs ?? undefined)}
-              />
-              <Metric
-                label="Min total"
-                value={formatDuration(benchmarkResult.summary.minTotalMs)}
-              />
-              <Metric
-                label="Max total"
-                value={formatDuration(benchmarkResult.summary.maxTotalMs)}
-              />
-            </div>
-            <div className="border-t border-border pt-3">
-              <div className="mb-2 text-xs text-muted">
-                {benchmarkResult.warmupRuns} warm-up run
-                {benchmarkResult.warmupRuns > 1 ? "s" : ""} excluded from{" "}
-                {benchmarkResult.measuredRuns} measured run
-                {benchmarkResult.measuredRuns > 1 ? "s" : ""}.
-              </div>
-              <div className="space-y-2">
-                {benchmarkResult.runs.map((benchmarkRun) => (
-                  <div
-                    className="flex items-center justify-between gap-3 border-b border-border pb-2 text-xs text-foreground last:border-b-0 last:pb-0"
-                    key={`${benchmarkRun.index}-${benchmarkRun.warmup}`}
-                  >
-                    <span className="min-w-0">
-                      {benchmarkRun.warmup
-                        ? `Warm-up ${benchmarkRun.index + 1}`
-                        : `Run ${benchmarkRun.index + 1 - benchmarkResult.warmupRuns}`}
-                    </span>
-                    <span className="text-muted">
-                      total {formatDuration(benchmarkRun.timings.totalMs)} • runner{" "}
-                      {formatDuration(
-                        benchmarkRun.timings.shopifyPhases?.functionRunnerMs,
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <EmptyState>Run a benchmark to compare repeated runs.</EmptyState>
-        )}
+          <InlineNote>
+            Parse {formatDuration(runResponse.timings.parseMs)} · Runner{" "}
+            {formatDuration(runResponse.timings.shopifyPhases.functionRunnerMs)}
+          </InlineNote>
+        ) : null}
       </SidebarSection>
     </SidebarPanel>
   );

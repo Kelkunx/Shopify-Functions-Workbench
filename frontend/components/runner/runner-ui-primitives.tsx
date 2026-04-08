@@ -30,21 +30,26 @@ export function PanelHeader({
 }
 
 export function SidebarSection({
+  actions,
   children,
   description,
   title,
 }: {
+  actions?: ReactNode;
   children: ReactNode;
   description?: string;
   title: string;
 }) {
   return (
     <section className={runnerUiClassNames.sectionWrapper}>
-      <div className="mb-4">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {description ? (
-          <p className="mt-1 text-sm leading-5 text-muted">{description}</p>
-        ) : null}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold">{title}</h2>
+          {description ? (
+            <p className="mt-1 text-sm leading-5 text-muted">{description}</p>
+          ) : null}
+        </div>
+        {actions ? <div className="shrink-0">{actions}</div> : null}
       </div>
       <div className="space-y-4">{children}</div>
     </section>
@@ -133,6 +138,21 @@ export function SmallActionButton({
   );
 }
 
+export function IconActionButton({
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      className={[runnerUiClassNames.iconActionButton, className]
+        .filter(Boolean)
+        .join(" ")}
+      type={props.type ?? "button"}
+    />
+  );
+}
+
 export function EmptyState({ children }: { children: ReactNode }) {
   return <div className={runnerUiClassNames.emptyState}>{children}</div>;
 }
@@ -206,16 +226,36 @@ export function InlineNote({
   return <p className={`text-sm leading-5 ${toneClassName}`}>{children}</p>;
 }
 
+export function SectionToggleButton({
+  children,
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      className={[runnerUiClassNames.sectionToggleButton, className]
+        .filter(Boolean)
+        .join(" ")}
+      type={props.type ?? "button"}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function CodeBlock({
   children,
+  className,
   expanded = false,
 }: {
   children: ReactNode;
+  className?: string;
   expanded?: boolean;
 }) {
   const codeBlockClassName = expanded
     ? "h-full overflow-auto rounded-md border border-border bg-stone-950 px-4 py-4 font-mono text-[13px] leading-6 text-stone-100"
-    : runnerUiClassNames.codeBlock;
+    : [runnerUiClassNames.codeBlock, className].filter(Boolean).join(" ");
 
   return <pre className={codeBlockClassName}>{children}</pre>;
 }

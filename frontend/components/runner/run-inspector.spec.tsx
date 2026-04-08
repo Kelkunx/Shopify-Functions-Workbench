@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { RunResultsPanel } from "./results-panel";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { RunInspector } from "./run-inspector";
 
 const baseRunResponse = {
   benchmark: {
@@ -89,37 +89,26 @@ const baseRunResponse = {
   },
 };
 
-describe("RunResultsPanel", () => {
-  it("shows the last benchmark run time instead of the benchmark total", () => {
+describe("RunInspector", () => {
+  it("opens the details drawer and shows timings and benchmark data", () => {
     render(
-      <RunResultsPanel
+      <RunInspector
         copyFeedback=""
         onCopyOutput={() => undefined}
         onExpandOutput={() => undefined}
-        onOpenDetails={() => undefined}
         runRequestError=""
         runResponse={baseRunResponse}
       />,
     );
 
-    expect(screen.getByText("Last run time")).toBeInTheDocument();
-    expect(screen.getByText("32.000 ms")).toBeInTheDocument();
-    expect(screen.queryByText("72.000 ms")).not.toBeInTheDocument();
-  });
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
 
-  it("renders output icon actions with accessible labels", () => {
-    render(
-      <RunResultsPanel
-        copyFeedback=""
-        onCopyOutput={() => undefined}
-        onExpandOutput={() => undefined}
-        onOpenDetails={() => undefined}
-        runRequestError=""
-        runResponse={baseRunResponse}
-      />,
-    );
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/Local timings are indicative only/i)).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "Copy output" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Expand output" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show benchmark" }));
+
+    expect(screen.getByText("Measured avg")).toBeInTheDocument();
+    expect(screen.getByText(/Warm-up 1/i)).toBeInTheDocument();
   });
 });

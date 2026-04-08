@@ -8,18 +8,20 @@ import {
 } from "./runner-ui-primitives";
 
 export function EditorPanel({
+  className,
   inputJson,
   jsonValidationError,
   onInputChange,
   runnerMode,
 }: {
+  className?: string;
   inputJson: string;
   jsonValidationError: string;
   onInputChange: (value: string) => void;
   runnerMode: RunnerMode;
 }) {
   return (
-    <SurfacePanel>
+    <SurfacePanel className={className}>
       <PanelHeader
         actions={
           <StateBadge tone={jsonValidationError ? "danger" : "neutral"}>

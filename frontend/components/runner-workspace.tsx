@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { RunnerControlsPanel } from "./runner/controls-panel";
 import { EditorPanel } from "./runner/editor-panel";
 import { ExpandedOutputModal } from "./runner/expanded-output-modal";
@@ -54,6 +55,18 @@ export function RunnerWorkspace() {
     updateRunnerMode,
     visibleSavedFixtures,
   } = useRunnerWorkspaceController();
+  const desktopGridColumns = useMemo(
+    () => "xl:grid-cols-[332px_minmax(0,1fr)_384px] 2xl:grid-cols-[348px_minmax(0,1fr)_408px]",
+    [],
+  );
+
+  function handleRun() {
+    runFunction();
+  }
+
+  function handleBenchmark() {
+    runBenchmark();
+  }
 
   return (
     <>
@@ -61,63 +74,69 @@ export function RunnerWorkspace() {
         <WorkspaceHeader
           activeExecutionKind={activeExecutionKind}
           isRunInFlight={isRunInFlight}
-          onBenchmark={runBenchmark}
+          onBenchmark={handleBenchmark}
           jsonValidationError={jsonValidationError}
           onFormatJson={formatCurrentInputJson}
-          onRun={runFunction}
+          onRun={handleRun}
           onRunnerModeChange={updateRunnerMode}
           runnerMode={activeRunnerMode}
         />
 
         <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:overflow-hidden lg:px-6 lg:py-6">
-          <div className="grid min-h-0 flex-1 gap-4 xl:h-full xl:grid-cols-[296px_minmax(0,1fr)_388px]">
-            <RunnerControlsPanel
-              currentBenchmarkIterations={currentBenchmarkIterations}
-              currentBenchmarkWarmup={currentBenchmarkWarmup}
-              currentExportName={currentExportName}
-              currentFixtureName={currentFixtureName}
-              currentFunctionDir={currentFunctionDir}
-              currentFunctionType={currentFunctionType}
-              lastRunResponse={runResponse}
-              onBenchmarkIterationsChange={setCurrentBenchmarkIterations}
-              onBenchmarkWarmupChange={setCurrentBenchmarkWarmup}
-              onDeleteSavedFixture={deleteSavedFixture}
-              onExportNameChange={setCurrentExportName}
-              onExportFixtures={exportVisibleFixtures}
-              onFixtureNameChange={setCurrentFixtureName}
-              onFixtureSave={saveCurrentFixture}
-              onFunctionDirChange={setCurrentFunctionDir}
-              onImportFixtures={importFixtureFile}
-              onFunctionTypeChange={updateFunctionType}
-              onLoadFixture={loadSavedFixture}
-              onLoadSelectedTemplate={loadSelectedTemplate}
-              onRenameScenario={renameScenario}
-              onSelectedTemplateChange={setSelectedTemplateId}
-              onTargetChange={setCurrentTarget}
-              onWasmFileChange={setCurrentWasmFile}
-              runnerMode={activeRunnerMode}
-              savedFixtures={visibleSavedFixtures}
-              selectedTemplateId={selectedTemplateId}
-              target={currentTarget}
-              templates={availableTemplates}
-              transferFeedback={fixturesTransferFeedback}
-              wasmFile={currentWasmFile}
-            />
+          <div className={`grid min-h-0 flex-1 gap-4 xl:h-full ${desktopGridColumns}`}>
+            <div className="flex min-h-0 xl:h-full">
+              <RunnerControlsPanel
+                currentBenchmarkIterations={currentBenchmarkIterations}
+                currentBenchmarkWarmup={currentBenchmarkWarmup}
+                currentExportName={currentExportName}
+                currentFixtureName={currentFixtureName}
+                currentFunctionDir={currentFunctionDir}
+                currentFunctionType={currentFunctionType}
+                lastRunResponse={runResponse}
+                onBenchmarkIterationsChange={setCurrentBenchmarkIterations}
+                onBenchmarkWarmupChange={setCurrentBenchmarkWarmup}
+                onDeleteSavedFixture={deleteSavedFixture}
+                onExportNameChange={setCurrentExportName}
+                onExportFixtures={exportVisibleFixtures}
+                onFixtureNameChange={setCurrentFixtureName}
+                onFixtureSave={saveCurrentFixture}
+                onFunctionDirChange={setCurrentFunctionDir}
+                onImportFixtures={importFixtureFile}
+                onFunctionTypeChange={updateFunctionType}
+                onLoadFixture={loadSavedFixture}
+                onLoadSelectedTemplate={loadSelectedTemplate}
+                onRenameScenario={renameScenario}
+                onSelectedTemplateChange={setSelectedTemplateId}
+                onTargetChange={setCurrentTarget}
+                onWasmFileChange={setCurrentWasmFile}
+                runnerMode={activeRunnerMode}
+                savedFixtures={visibleSavedFixtures}
+                selectedTemplateId={selectedTemplateId}
+                target={currentTarget}
+                templates={availableTemplates}
+                transferFeedback={fixturesTransferFeedback}
+                wasmFile={currentWasmFile}
+              />
+            </div>
 
-            <EditorPanel
-              inputJson={currentInputJson}
-              jsonValidationError={jsonValidationError}
-              onInputChange={setCurrentInputJson}
-              runnerMode={activeRunnerMode}
-            />
+            <div className="flex min-h-0 xl:h-full">
+              <EditorPanel
+                inputJson={currentInputJson}
+                jsonValidationError={jsonValidationError}
+                onInputChange={setCurrentInputJson}
+                runnerMode={activeRunnerMode}
+              />
+            </div>
 
-            <RunInspector
-              copyFeedback={outputCopyFeedback}
-              onCopyOutput={copyRunOutput}
-              onExpandOutput={() => setIsOutputModalOpen(true)}
-              runRequestError={runRequestError}
-              runResponse={runResponse}
-            />
+            <div className="flex min-h-0 xl:h-full">
+              <RunInspector
+                copyFeedback={outputCopyFeedback}
+                onCopyOutput={copyRunOutput}
+                onExpandOutput={() => setIsOutputModalOpen(true)}
+                runRequestError={runRequestError}
+                runResponse={runResponse}
+              />
+            </div>
           </div>
         </main>
       </div>

@@ -7,6 +7,7 @@ import {
   IconActionButton,
   InlineNote,
   Metric,
+  SmallActionButton,
   SidebarPanel,
   SidebarSection,
 } from "./runner-ui-primitives";
@@ -58,6 +59,7 @@ function ExpandIcon() {
 }
 
 export function RunResultsPanel({
+  className,
   copyFeedback,
   onCopyOutput,
   onExpandOutput,
@@ -65,6 +67,7 @@ export function RunResultsPanel({
   runRequestError,
   runResponse,
 }: {
+  className?: string;
   copyFeedback: string;
   onCopyOutput: () => void;
   onExpandOutput: () => void;
@@ -106,17 +109,17 @@ export function RunResultsPanel({
     : Math.max((runResponse?.errorDetails.length ?? 0) - 1, 0);
 
   return (
-    <SidebarPanel>
+    <SidebarPanel className={className}>
       <SidebarSection
         actions={
-          <button
-            className="text-sm font-medium text-foreground underline-offset-2 transition-colors hover:text-primary disabled:text-muted"
+          <SmallActionButton
+            className="px-2 py-1 text-xs"
             disabled={!hasDetails}
             onClick={onOpenDetails}
             type="button"
           >
             Details
-          </button>
+          </SmallActionButton>
         }
         description="Latest run status."
         title="Run result"
@@ -154,33 +157,38 @@ export function RunResultsPanel({
       </SidebarSection>
 
       <SidebarSection
-        actions={
-          <div className="flex items-center gap-2">
-            <IconActionButton
-              aria-label="Copy output"
-              disabled={!runResponse}
-              onClick={onCopyOutput}
-              title="Copy output"
-            >
-              <CopyIcon />
-            </IconActionButton>
-            <IconActionButton
-              aria-label="Expand output"
-              disabled={!runResponse}
-              onClick={onExpandOutput}
-              title="Expand output"
-            >
-              <ExpandIcon />
-            </IconActionButton>
-          </div>
-        }
         description="Latest runner output."
         title="Output"
       >
         {copyFeedback ? <InlineNote>{copyFeedback}</InlineNote> : null}
-        <CodeBlock className="max-h-72">
-          {runResponse ? formatOutputJson(runResponse.output) : "{\n  \n}"}
-        </CodeBlock>
+        <div className="mt-3 overflow-hidden rounded-md border border-stone-800 bg-stone-950">
+          <div className="flex items-center justify-between border-b border-stone-800 px-3 py-2">
+            <div className="text-xs font-medium text-stone-400">JSON</div>
+            <div className="flex items-center gap-1">
+              <IconActionButton
+                aria-label="Copy output"
+                className="h-7 w-7 border-transparent bg-transparent text-stone-400 hover:border-stone-700 hover:bg-transparent hover:text-stone-100"
+                disabled={!runResponse}
+                onClick={onCopyOutput}
+                title="Copy output"
+              >
+                <CopyIcon />
+              </IconActionButton>
+              <IconActionButton
+                aria-label="Expand output"
+                className="h-7 w-7 border-transparent bg-transparent text-stone-400 hover:border-stone-700 hover:bg-transparent hover:text-stone-100"
+                disabled={!runResponse}
+                onClick={onExpandOutput}
+                title="Expand output"
+              >
+                <ExpandIcon />
+              </IconActionButton>
+            </div>
+          </div>
+          <CodeBlock className="mt-0 max-h-72 rounded-none border-0 bg-transparent px-3 py-3">
+            {runResponse ? formatOutputJson(runResponse.output) : "{\n  \n}"}
+          </CodeBlock>
+        </div>
       </SidebarSection>
 
       <SidebarSection description="Runner errors." title="Errors">

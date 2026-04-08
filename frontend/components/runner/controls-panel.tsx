@@ -17,6 +17,7 @@ import {
 import { runnerUiClassNames } from "./runner-ui-class-names";
 
 export function RunnerControlsPanel({
+  className,
   currentBenchmarkIterations,
   currentBenchmarkWarmup,
   currentExportName,
@@ -48,6 +49,7 @@ export function RunnerControlsPanel({
   transferFeedback,
   wasmFile,
 }: {
+  className?: string;
   currentBenchmarkIterations: number;
   currentBenchmarkWarmup: number;
   currentExportName: string;
@@ -99,7 +101,7 @@ export function RunnerControlsPanel({
     lastRunResponse.diagnostics.shopify.target === target.trim();
 
   return (
-    <SidebarPanel>
+    <SidebarPanel className={className}>
       <SidebarSection
         description="Set up the next run."
         title="1. Run setup"

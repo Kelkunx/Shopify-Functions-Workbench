@@ -1,4 +1,5 @@
 import type {
+  HTMLAttributes,
   ButtonHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
@@ -6,12 +7,38 @@ import type {
 } from "react";
 import { runnerUiClassNames } from "./runner-ui-class-names";
 
-export function SidebarPanel({ children }: { children: ReactNode }) {
-  return <aside className={runnerUiClassNames.sectionPanelWrapper}>{children}</aside>;
+export function SidebarPanel({
+  children,
+  className,
+  ...props
+}: HTMLAttributes<HTMLElement> & { children: ReactNode }) {
+  return (
+    <aside
+      {...props}
+      className={[runnerUiClassNames.sectionPanelWrapper, className]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {children}
+    </aside>
+  );
 }
 
-export function SurfacePanel({ children }: { children: ReactNode }) {
-  return <section className={runnerUiClassNames.sectionPanel}>{children}</section>;
+export function SurfacePanel({
+  children,
+  className,
+  ...props
+}: HTMLAttributes<HTMLElement> & { children: ReactNode }) {
+  return (
+    <section
+      {...props}
+      className={[runnerUiClassNames.sectionPanel, className]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {children}
+    </section>
+  );
 }
 
 export function PanelHeader({

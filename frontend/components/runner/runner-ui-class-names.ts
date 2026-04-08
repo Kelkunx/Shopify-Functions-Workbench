@@ -15,11 +15,14 @@ export const runnerUiClassNames = {
     "rounded-md bg-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-strong disabled:cursor-not-allowed disabled:bg-amber-300",
   resultsActionButton:
     "rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-border-strong hover:bg-stone-100 disabled:opacity-50",
-  sectionPanel: "flex min-h-0 flex-col border border-border bg-surface-strong",
+  sectionPanel:
+    "flex h-full min-h-0 w-full flex-1 flex-col border border-border bg-surface-strong",
   sectionPanelHeader:
     "flex items-start justify-between gap-4 border-b border-border px-5 py-4",
   sectionPanelWrapper:
-    "min-h-0 overflow-y-auto border border-border bg-surface-strong",
+    "flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto border border-border bg-surface-strong",
+  focusedPanel:
+    "border-border-strong",
   sectionWrapper: "border-b border-border px-5 py-5 last:border-b-0",
   secondaryButton:
     "rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:border-border-strong hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60",

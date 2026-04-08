@@ -6,12 +6,14 @@ import { RunDetailsDrawer } from "./run-details-drawer";
 import { RunResultsPanel } from "./results-panel";
 
 export function RunInspector({
+  className,
   copyFeedback,
   onCopyOutput,
   onExpandOutput,
   runRequestError,
   runResponse,
 }: {
+  className?: string;
   copyFeedback: string;
   onCopyOutput: () => void;
   onExpandOutput: () => void;
@@ -23,6 +25,7 @@ export function RunInspector({
   return (
     <>
       <RunResultsPanel
+        className={className}
         copyFeedback={copyFeedback}
         onCopyOutput={onCopyOutput}
         onExpandOutput={onExpandOutput}

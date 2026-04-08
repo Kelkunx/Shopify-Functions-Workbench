@@ -104,8 +104,8 @@ export function RunnerControlsPanel({
         <Field
           helper={
             runnerMode === "mock"
-              ? "Optional in mock mode. The backend can run without a real file."
-              : "Optional override when you want to run a local Shopify function with a different build output."
+              ? "Optional in mock mode. The backend can run without a real file. Only run trusted Wasm locally."
+              : "Optional override when you want to run a local Shopify function with a different build output. Only run trusted Wasm locally."
           }
           label="Wasm file"
         >

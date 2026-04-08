@@ -52,6 +52,7 @@ npm run test:e2e
 - real Shopify mode requires Shopify CLI plus a valid local function directory and target
 - real Shopify responses include local phase timings like parse, execution, `functionInfo`, and `functionRunner`
 - these timings reflect local machine overhead and are intended for local comparison, not as Shopify production guarantees
+- only run trusted Wasm locally; this backend is a local developer workflow, not a hardened security sandbox for arbitrary Wasm
 - backend-only benchmark helper from the repo root:
 
 ```bash

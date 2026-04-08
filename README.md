@@ -20,6 +20,11 @@ The workbench is designed to shorten the Shopify Functions feedback loop:
 - execute through a local backend
 - inspect output JSON, execution time, and errors
 
+Security note:
+
+- only run trusted Wasm locally
+- the workbench is a local developer tool, not a hardened security sandbox for untrusted Wasm
+
 ## Current MVP Status
 
 Implemented:
@@ -159,6 +164,7 @@ Used when only JSON, templates, and an optional `.wasm` file are provided.
 - no Shopify CLI metadata required
 - useful for UI and payload iteration
 - unknown or omitted function types fall back to `custom`
+- only run trusted Wasm locally
 
 ### Real Shopify mode
 
@@ -167,6 +173,7 @@ Used when `functionDir` and `target` are provided.
 - backend resolves `functionRunnerPath`, `schemaPath`, `wasmPath`, and targeting via Shopify CLI
 - backend invokes Shopify's official `function-runner`
 - an uploaded `.wasm` file overrides the built Wasm for that single run
+- only run trusted Wasm locally
 
 ## Fixtures
 

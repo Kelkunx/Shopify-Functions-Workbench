@@ -47,3 +47,4 @@ npm run lint
 - if no recognized function type is provided, mock mode falls back to `custom`
 - fixtures can be exported and imported as JSON; legacy storage from the old project name is migrated automatically
 - for Shopify runs, the UI shows a note that local timings are indicative only and may differ from Shopify production runtime performance
+- only run trusted Wasm locally; the workbench UI is not a hardened sandbox for untrusted Wasm

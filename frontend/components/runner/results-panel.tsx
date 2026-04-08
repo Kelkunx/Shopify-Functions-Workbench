@@ -44,13 +44,14 @@ export function RunResultsPanel({
   const currentStatusDescription = hasRunResponse
     ? benchmarkResult
       ? isSuccessfulRun
-        ? "Benchmark completed. This panel shows the final run result."
-        : "Benchmark stopped on the final run because of runner errors."
+        ? "Benchmark completed. Showing the final run."
+        : "Benchmark stopped on the final run."
       : isSuccessfulRun
-        ? "The last run completed and returned a structured response."
-        : "The last run finished with runner errors."
-    : "Configure the runner, then use Run or Benchmark to execute it.";
-  const currentExecutionTimeValue = lastBenchmarkRun?.executionTimeMs ?? runResponse?.executionTimeMs;
+        ? "The last run completed."
+        : "The last run failed."
+    : "Run the current setup.";
+  const currentExecutionTimeValue =
+    lastBenchmarkRun?.executionTimeMs ?? runResponse?.executionTimeMs;
   const currentExecutionTime = hasRunResponse
     ? `${currentExecutionTimeValue?.toFixed(3)} ms`
     : "Not run";
@@ -61,7 +62,7 @@ export function RunResultsPanel({
   return (
     <SidebarPanel>
       <SidebarSection
-        description="Current result of the last single run or benchmark sample."
+        description="Latest run status."
         title="Run result"
       >
         <div className="rounded-md border border-border bg-surface px-4 py-4">
@@ -98,14 +99,14 @@ export function RunResultsPanel({
       </SidebarSection>
 
       <SidebarSection
-        description="Structured JSON response from the last run."
+        description="Latest runner output."
         title="Output"
       >
         <div className="flex items-center justify-between gap-2">
           <InlineNote>
             {runResponse
-              ? "Ready to inspect, copy, or expand."
-              : "Run the payload to inspect output."}
+              ? "Ready to inspect."
+              : "Run to inspect output."}
           </InlineNote>
           <div className="flex items-center gap-2">
             {copyFeedback ? (
@@ -132,7 +133,7 @@ export function RunResultsPanel({
         </CodeBlock>
       </SidebarSection>
 
-      <SidebarSection description="Structured runner failures appear here." title="Errors">
+      <SidebarSection description="Runner errors." title="Errors">
         {runResponse?.errorDetails.length ? (
           <div className="space-y-2">
             {runResponse.errorDetails.map((errorDetail) => (
@@ -150,7 +151,7 @@ export function RunResultsPanel({
       </SidebarSection>
 
       <SidebarSection
-        description="Timings are split by parsing, execution, and Shopify runner phases when available."
+        description="Local timing breakdown."
         title="Timings"
       >
         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -203,18 +204,16 @@ export function RunResultsPanel({
               Cleanup: {formatDuration(runResponse.timings.shopifyPhases.cleanupMs)}
             </div>
             <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-stone-800">
-              Local timings are indicative only. They include your local runner
-              environment and may differ from Shopify production runtime
-              performance.
+              Local timings are indicative only and may differ from Shopify runtime.
             </div>
           </div>
         ) : (
-          <EmptyState>Detailed phase timings appear for Shopify runs.</EmptyState>
+          <EmptyState>Detailed timings appear for Shopify runs.</EmptyState>
         )}
       </SidebarSection>
 
       <SidebarSection
-        description="Secondary tool. Use benchmarks to compare repeated local runs and ignore warm-up noise."
+        description="Repeated local runs."
         title="Benchmark"
       >
         {benchmarkResult ? (
@@ -267,9 +266,7 @@ export function RunResultsPanel({
             </div>
           </div>
         ) : (
-          <EmptyState>
-            Run a benchmark to compare repeated local executions with a cleaner local baseline.
-          </EmptyState>
+          <EmptyState>Run a benchmark to compare repeated runs.</EmptyState>
         )}
       </SidebarSection>
     </SidebarPanel>

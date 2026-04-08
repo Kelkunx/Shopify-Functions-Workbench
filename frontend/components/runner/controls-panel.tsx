@@ -100,21 +100,19 @@ export function RunnerControlsPanel({
   return (
     <SidebarPanel>
       <SidebarSection
-        description="Configure the next run here. Required Shopify fields are grouped together so the path to execution stays obvious."
+        description="Set up the next run."
         title="1. Run setup"
       >
         {runnerMode === "shopify" ? (
           currentShopifyConfigLooksReady ? (
-            <InlineNote>Shopify mode is active. The next run will use your local function directory.</InlineNote>
+            <InlineNote>Shopify mode is active.</InlineNote>
           ) : (
             <InlineNote tone="danger">
-              Shopify mode is active. Fill both <code>functionDir</code> and <code>target</code> before running.
+              Fill <code>functionDir</code> and <code>target</code> to run in Shopify mode.
             </InlineNote>
           )
         ) : (
-          <InlineNote>
-            Mock mode is available for quick payload and output checks before a real Shopify run.
-          </InlineNote>
+          <InlineNote>Mock mode is for quick checks.</InlineNote>
         )}
 
         <Field label="Function type">
@@ -154,12 +152,12 @@ export function RunnerControlsPanel({
             <div>
               <h3 className="text-sm font-medium text-foreground">Required for Shopify runs</h3>
               <p className="mt-1 text-sm leading-5 text-muted">
-                These fields point the workbench to the local Shopify Function you want to execute.
+                Point the workbench to the local Shopify Function.
               </p>
             </div>
 
             <Field
-              helper="Local function directory. This is the main path used for real local validation."
+              helper="Path to the local function directory."
               label="functionDir (required)"
             >
               <TextInput
@@ -171,7 +169,7 @@ export function RunnerControlsPanel({
             </Field>
 
             <Field
-              helper="Exact Shopify target, for example `cart.lines.discounts.generate.run`."
+              helper="Exact Shopify target."
               label="target (required)"
             >
               <TextInput
@@ -192,7 +190,7 @@ export function RunnerControlsPanel({
             </Field>
 
             {currentTargetResolved ? (
-              <InlineNote>Target resolved on the last successful Shopify run.</InlineNote>
+              <InlineNote>Target resolved on the last run.</InlineNote>
             ) : null}
           </div>
         ) : null}
@@ -201,16 +199,16 @@ export function RunnerControlsPanel({
           <div>
             <h3 className="text-sm font-medium text-foreground">Optional Wasm override</h3>
             <p className="mt-1 text-sm leading-5 text-muted">
-              Use this only when you want to run a specific local Wasm build instead of the default output.
+              Use a specific local Wasm build.
             </p>
           </div>
 
           <Field
-            helper={
-              runnerMode === "mock"
-                ? "Optional in mock mode. The backend can run without a real file. Only run trusted Wasm locally."
-                : "Optional override for Shopify mode. Only run trusted Wasm locally."
-            }
+          helper={
+            runnerMode === "mock"
+                ? "Optional in mock mode. Only run trusted Wasm locally."
+                : "Optional in Shopify mode. Only run trusted Wasm locally."
+          }
             label="Wasm file"
           >
             <input
@@ -226,19 +224,18 @@ export function RunnerControlsPanel({
 
           {wasmFile ? (
             <InlineNote>
-              Wasm override selected. This run will ignore the built Shopify Wasm in the
-              function directory.
+              This run will use the uploaded Wasm.
             </InlineNote>
           ) : null}
         </div>
       </SidebarSection>
 
       <SidebarSection
-        description="Secondary tool. Use this when you want repeated local measurements rather than a single execution."
+        description="Optional repeated runs."
         title="2. Benchmark"
       >
         <Field
-          helper="Warm-up runs are excluded from the averages. Use this to compare local runner performance without the browser."
+          helper="Warm-up runs are excluded from averages."
           label="Iterations"
         >
           <TextInput
@@ -250,7 +247,7 @@ export function RunnerControlsPanel({
             value={currentBenchmarkIterations}
           />
         </Field>
-        <Field helper="Default is 1. Keep this lower than iterations." label="Warm-up runs">
+        <Field helper="Default: 1. Keep this below iterations." label="Warm-up runs">
           <TextInput
             min={0}
             onChange={(event) =>
@@ -305,11 +302,11 @@ function SavedFixturesSection({
 
   return (
     <SidebarSection
-      description="Secondary tool. Keep reusable local scenarios here so you can reload them quickly later."
+      description="Optional saved scenarios."
       title="Saved scenarios"
     >
       <Field
-        helper="Save will overwrite by name inside the same mode."
+        helper="Save overwrites by name in the same mode."
         label="Scenario name"
       >
         <div className="flex gap-2">
@@ -352,7 +349,7 @@ function SavedFixturesSection({
 
       <div className="space-y-2">
         {savedFixtures.length === 0 ? (
-          <EmptyState>No saved scenarios for this mode.</EmptyState>
+          <EmptyState>No saved scenarios.</EmptyState>
         ) : (
           savedFixtures.map((savedFixture) => (
             <SavedFixtureCard

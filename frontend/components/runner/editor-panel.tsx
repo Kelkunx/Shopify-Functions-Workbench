@@ -31,13 +31,13 @@ export function EditorPanel({
           <h2 className="text-sm font-semibold">Input JSON</h2>
           <div className="mt-1 text-sm text-muted">
             {runnerMode === "mock"
-              ? "Edit the payload used for mock runs or a local Wasm override."
-              : "Edit the payload passed to the local Shopify runner."}
+              ? "Edit the payload for mock runs or a Wasm override."
+              : "Edit the payload for the Shopify runner."}
           </div>
           <InlineNote>
             {runnerMode === "mock"
-              ? "Mock mode is useful for quick payload checks before a real Shopify run."
-              : "Shopify mode is the primary path for real local validation."}
+              ? "Use mock mode for quick checks."
+              : "Use Shopify mode for real local validation."}
           </InlineNote>
         </div>
       </PanelHeader>

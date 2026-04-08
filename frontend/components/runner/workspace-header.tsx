@@ -31,7 +31,7 @@ export function WorkspaceHeader({
           <div className="min-w-0">
             <h1 className="text-[15px] font-semibold">Shopify Functions Workbench</h1>
             <p className="mt-0.5 text-sm text-muted">
-              Local Shopify Function runs, scenarios, and benchmark checks.
+              Local runs, scenarios, and benchmarks.
             </p>
           </div>
           <div className="hidden h-8 w-px bg-border lg:block" />

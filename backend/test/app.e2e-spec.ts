@@ -6,9 +6,24 @@ import { configureApp } from './../src/app.setup';
 import { AppModule } from './../src/app.module';
 
 interface RunResponseBody {
+  diagnostics: {
+    actualRunnerMode: 'mock' | 'shopify';
+    benchmarkEnabled: boolean;
+    requestedRunnerMode: 'mock' | 'shopify';
+  };
+  errorDetails: Array<{
+    code: string;
+    message: string;
+    source: string;
+  }>;
   success: boolean;
   errors: string[];
   output: Record<string, unknown>;
+  timings: {
+    executionMs: number;
+    parseMs: number;
+    totalMs: number;
+  };
 }
 
 describe('RunController (e2e)', () => {
@@ -43,9 +58,41 @@ describe('RunController (e2e)', () => {
 
         expect(responseBody.success).toBe(true);
         expect(responseBody.errors).toEqual([]);
+        expect(responseBody.errorDetails).toEqual([]);
+        expect(responseBody.diagnostics).toMatchObject({
+          actualRunnerMode: 'mock',
+          benchmarkEnabled: false,
+          requestedRunnerMode: 'mock',
+        });
         expect(responseBody.output).toMatchObject({
           mockRunner: true,
           functionType: 'product-discount',
+        });
+      });
+  });
+
+  it('/run (POST) supports benchmark mode on the same endpoint', () => {
+    return request(app.getHttpServer())
+      .post('/run')
+      .field('inputJson', JSON.stringify({ cart: { lines: [] } }))
+      .field('functionType', 'cart-transform')
+      .field('benchmarkIterations', '3')
+      .field('benchmarkWarmup', '1')
+      .expect(200)
+      .expect(({ body }) => {
+        const responseBody = body as RunResponseBody & {
+          benchmark: {
+            enabled: boolean;
+            measuredRuns: number;
+            warmupRuns: number;
+          };
+        };
+
+        expect(responseBody.success).toBe(true);
+        expect(responseBody.benchmark).toMatchObject({
+          enabled: true,
+          measuredRuns: 3,
+          warmupRuns: 1,
         });
       });
   });
@@ -56,7 +103,9 @@ describe('RunController (e2e)', () => {
       .field('functionType', 'product-discount')
       .expect(400)
       .expect(({ body }) => {
-        expect(body.message).toEqual(
+        const errorBody = body as { message: string[] };
+
+        expect(errorBody.message).toEqual(
           expect.arrayContaining([
             'inputJson must be longer than or equal to 1 characters',
           ]),

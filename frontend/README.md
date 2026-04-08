@@ -11,8 +11,9 @@ The frontend provides the workbench UI to:
 - edit JSON with Monaco Editor
 - optionally upload a `.wasm` file
 - optionally provide a Shopify function directory and target for real execution
-- save and reload local fixtures in the browser
-- export and import fixtures as JSON
+- save and reload local scenarios in the browser
+- rename, overwrite, export, and import scenarios as JSON
+- benchmark repeated runs from the UI
 - call the local backend runner
 - inspect output, errors, and execution time
 - inspect detailed local phase timings for Shopify runs
@@ -36,6 +37,7 @@ npm run dev:light
 npm run dev:turbo
 npm run build
 npm run lint
+npm test
 ```
 
 ## Notes
@@ -45,6 +47,7 @@ npm run lint
 - the frontend defaults to `http://localhost:3001` for the backend API unless `NEXT_PUBLIC_API_BASE_URL` is set
 - if `functionDir` and `target` are provided in the UI, the backend switches from mock mode to the real Shopify runner path
 - if no recognized function type is provided, mock mode falls back to `custom`
-- fixtures can be exported and imported as JSON; legacy storage from the old project name is migrated automatically
+- scenarios can be exported and imported as JSON; legacy storage from the old project name is migrated automatically
 - for Shopify runs, the UI shows a note that local timings are indicative only and may differ from Shopify production runtime performance
 - only run trusted Wasm locally; the workbench UI is not a hardened sandbox for untrusted Wasm
+- Shopify is the default serious path in the UI; mock mode remains available as an assistive workflow

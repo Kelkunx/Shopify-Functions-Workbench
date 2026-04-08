@@ -6,15 +6,19 @@ import {
 } from "./runner-ui-primitives";
 
 export function WorkspaceHeader({
+  activeExecutionKind,
   isRunInFlight,
   jsonValidationError,
+  onBenchmark,
   onFormatJson,
   onRun,
   onRunnerModeChange,
   runnerMode,
 }: {
+  activeExecutionKind: "benchmark" | "single" | null;
   isRunInFlight: boolean;
   jsonValidationError: string;
+  onBenchmark: () => void;
   onFormatJson: () => void;
   onRun: () => void;
   onRunnerModeChange: (mode: RunnerMode) => void;
@@ -35,7 +39,7 @@ export function WorkspaceHeader({
           <div className="hidden items-center gap-2 lg:flex">
             <ModeButton
               active={runnerMode === "mock"}
-              label="Mock"
+              label="Mock assistive"
               onClick={() => onRunnerModeChange("mock")}
             />
             <ModeButton
@@ -54,8 +58,17 @@ export function WorkspaceHeader({
           >
             Format JSON
           </SecondaryButton>
+          <SecondaryButton
+            disabled={isRunInFlight || Boolean(jsonValidationError)}
+            onClick={onBenchmark}
+            type="button"
+          >
+            {isRunInFlight && activeExecutionKind === "benchmark"
+              ? "Benchmarking..."
+              : "Benchmark"}
+          </SecondaryButton>
           <PrimaryButton disabled={isRunInFlight} onClick={onRun} type="button">
-            {isRunInFlight ? "Running..." : "Run"}
+            {isRunInFlight && activeExecutionKind === "single" ? "Running..." : "Run"}
           </PrimaryButton>
         </div>
       </div>
@@ -63,7 +76,7 @@ export function WorkspaceHeader({
       <div className="flex items-center gap-2 border-t border-border px-5 py-2 text-sm lg:hidden">
         <ModeButton
           active={runnerMode === "mock"}
-          label="Mock"
+          label="Mock assistive"
           onClick={() => onRunnerModeChange("mock")}
         />
         <ModeButton

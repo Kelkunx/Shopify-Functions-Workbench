@@ -2,6 +2,9 @@ import { type SupportedFunctionType } from '../dto/run-request.dto';
 import { type UploadedWasmFile } from './uploaded-wasm-file.type';
 
 export interface ParsedRunRequest {
+  benchmarkEnabled: boolean;
+  benchmarkIterations: number;
+  benchmarkWarmup: number;
   hasRealRunnerConfig: boolean;
   normalizedFunctionType: SupportedFunctionType;
   parsedInput: Record<string, unknown>;

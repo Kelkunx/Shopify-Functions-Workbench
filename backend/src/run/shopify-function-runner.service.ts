@@ -38,6 +38,8 @@ export class ShopifyFunctionRunnerService {
   private helpersModulePromise: Promise<ShopifyFunctionTestHelpersModule> | null =
     null;
   private shopifyRunQueue: Promise<void> = Promise.resolve();
+  // Nest emits CommonJS here, so we need a runtime dynamic import for this ESM helper.
+  // eslint-disable-next-line @typescript-eslint/no-implied-eval
   private readonly dynamicImport = new Function(
     'specifier',
     'return import(specifier)',
@@ -95,11 +97,11 @@ export class ShopifyFunctionRunnerService {
         let stdout = '';
         let stderr = '';
 
-        runnerProcess.stdout.on('data', (data) => {
+        runnerProcess.stdout.on('data', (data: Buffer | string) => {
           stdout += data.toString();
         });
 
-        runnerProcess.stderr.on('data', (data) => {
+        runnerProcess.stderr.on('data', (data: Buffer | string) => {
           stderr += data.toString();
         });
 
@@ -168,9 +170,7 @@ export class ShopifyFunctionRunnerService {
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
 
-  private async runFunctionExclusively<T>(
-    task: () => Promise<T>,
-  ): Promise<T> {
+  private async runFunctionExclusively<T>(task: () => Promise<T>): Promise<T> {
     const previousRun = this.shopifyRunQueue;
     let releaseCurrentRun!: () => void;
 

@@ -13,6 +13,7 @@ The backend exposes a local `POST /run` endpoint used by the frontend to:
 - execute the function locally
 - return output, timing, and errors
 - return detailed local timing phases for debugging Shopify runner overhead
+- optionally benchmark repeated runs on the same endpoint
 
 The backend now supports two paths:
 
@@ -51,6 +52,8 @@ npm run test:e2e
 - mock mode still supports requests without a real `.wasm` file to simplify local UI testing
 - real Shopify mode requires Shopify CLI plus a valid local function directory and target
 - real Shopify responses include local phase timings like parse, execution, `functionInfo`, and `functionRunner`
+- `/run` now returns machine-readable `errorDetails` and runner `diagnostics` in addition to the existing string `errors`
+- `/run` can benchmark repeated runs by accepting `benchmarkIterations` and `benchmarkWarmup`
 - these timings reflect local machine overhead and are intended for local comparison, not as Shopify production guarantees
 - only run trusted Wasm locally; this backend is a local developer workflow, not a hardened security sandbox for arbitrary Wasm
 - backend-only benchmark helper from the repo root:

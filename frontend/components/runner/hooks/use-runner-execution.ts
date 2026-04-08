@@ -7,6 +7,8 @@ import type { RunResponse } from "../../runner-workspace.types";
 import { runnerApiBaseUrl } from "../../runner-workspace.helpers";
 
 interface UseRunnerExecutionParams {
+  currentBenchmarkIterations: number;
+  currentBenchmarkWarmup: number;
   currentExportName: string;
   currentFunctionDir: string;
   currentFunctionType: FunctionType;
@@ -18,6 +20,8 @@ interface UseRunnerExecutionParams {
 }
 
 export function useRunnerExecution({
+  currentBenchmarkIterations,
+  currentBenchmarkWarmup,
   currentExportName,
   currentFunctionDir,
   currentFunctionType,
@@ -28,11 +32,15 @@ export function useRunnerExecution({
   runnerMode,
 }: UseRunnerExecutionParams) {
   const [isRunInFlight, setIsRunInFlight] = useState(false);
+  const [activeExecutionKind, setActiveExecutionKind] = useState<
+    "benchmark" | "single" | null
+  >(null);
   const [runRequestError, setRunRequestError] = useState("");
   const [runResponse, setRunResponse] = useState<RunResponse | null>(null);
 
-  async function runFunction() {
+  async function executeRunner(executionKind: "benchmark" | "single") {
     setIsRunInFlight(true);
+    setActiveExecutionKind(executionKind);
     setRunRequestError("");
 
     if (jsonValidationError) {
@@ -45,6 +53,11 @@ export function useRunnerExecution({
     const formData = new FormData();
     formData.append("inputJson", currentInputJson);
     formData.append("functionType", currentFunctionType);
+
+    if (executionKind === "benchmark") {
+      formData.append("benchmarkIterations", String(currentBenchmarkIterations));
+      formData.append("benchmarkWarmup", String(currentBenchmarkWarmup));
+    }
 
     if (currentWasmFile) {
       formData.append("wasm", currentWasmFile);
@@ -84,12 +97,23 @@ export function useRunnerExecution({
         error instanceof Error ? error.message : "Unable to reach the backend.",
       );
     } finally {
+      setActiveExecutionKind(null);
       setIsRunInFlight(false);
     }
   }
 
+  async function runFunction() {
+    await executeRunner("single");
+  }
+
+  async function runBenchmark() {
+    await executeRunner("benchmark");
+  }
+
   return {
+    activeExecutionKind,
     isRunInFlight,
+    runBenchmark,
     runFunction,
     runRequestError,
     runResponse,

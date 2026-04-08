@@ -11,7 +11,9 @@ import {
 } from "@/components/runner-workspace.helpers";
 
 export function useRunnerFormState() {
-  const [activeRunnerMode, setActiveRunnerMode] = useState<RunnerMode>("mock");
+  const [activeRunnerMode, setActiveRunnerMode] = useState<RunnerMode>("shopify");
+  const [currentBenchmarkIterations, setCurrentBenchmarkIterations] = useState(5);
+  const [currentBenchmarkWarmup, setCurrentBenchmarkWarmup] = useState(1);
   const [currentFunctionType, setCurrentFunctionType] =
     useState<FunctionType>(initialRunnerFunctionType);
   const [selectedTemplateId, setSelectedTemplateId] = useState(
@@ -54,6 +56,8 @@ export function useRunnerFormState() {
 
   function applySavedFixture(savedFixture: SavedFixture) {
     setActiveRunnerMode(savedFixture.runnerMode);
+    setCurrentBenchmarkIterations(savedFixture.benchmarkIterations);
+    setCurrentBenchmarkWarmup(savedFixture.benchmarkWarmup);
     setCurrentFunctionType(savedFixture.functionType);
     setSelectedTemplateId(
       getTemplatesForType(savedFixture.functionType)[0]?.id ?? "",
@@ -70,6 +74,8 @@ export function useRunnerFormState() {
     activeRunnerMode,
     activeTemplate,
     availableTemplates,
+    currentBenchmarkIterations,
+    currentBenchmarkWarmup,
     currentExportName,
     currentFixtureName,
     currentFunctionDir,
@@ -79,6 +85,8 @@ export function useRunnerFormState() {
     currentWasmFile,
     jsonValidationError,
     selectedTemplateId,
+    setCurrentBenchmarkIterations,
+    setCurrentBenchmarkWarmup,
     setCurrentExportName,
     setCurrentFixtureName,
     setCurrentFunctionDir,

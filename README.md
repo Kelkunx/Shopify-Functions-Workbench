@@ -31,6 +31,7 @@ Implemented:
 
 - monorepo with separate frontend and backend apps
 - `POST /run` backend endpoint
+- benchmark workflow on the same `/run` endpoint
 - multipart upload support for a `.wasm` file
 - JSON input handling
 - real Shopify execution path using Shopify CLI metadata and `function-runner`
@@ -42,15 +43,18 @@ Implemented:
 - frontend single-page runner UI
 - Monaco JSON editor
 - explicit mock vs Shopify runner modes
-- saved local fixtures in the browser
-- fixture import/export as JSON for the current runner mode
+- saved local scenarios in the browser
+- scenario import/export as JSON for the current runner mode
+- structured error details and Shopify runner diagnostics
+- benchmark inputs and benchmark result panels
 - result, error, and execution time panels
 
 Current limitation:
 
-- the simple path still falls back to a mock runner when Shopify metadata is not provided
+- mock mode still exists for DX and payload iteration
 - real Shopify execution requires a local function directory and target metadata
-- because the runner is mocked, testing without a real `.wasm` file is supported
+- local timings are useful for comparison, not as Shopify production guarantees
+- the repo does not yet ship a clean versioned example function package
 
 ## Tech Stack
 
@@ -94,6 +98,12 @@ Response:
   "output": {},
   "executionTimeMs": 0.42,
   "errors": [],
+  "errorDetails": [],
+  "diagnostics": {
+    "requestedRunnerMode": "shopify",
+    "actualRunnerMode": "shopify",
+    "benchmarkEnabled": false
+  },
   "timings": {
     "parseMs": 0.02,
     "executionMs": 0.4,
@@ -175,13 +185,14 @@ Used when `functionDir` and `target` are provided.
 - an uploaded `.wasm` file overrides the built Wasm for that single run
 - only run trusted Wasm locally
 
-## Fixtures
+## Scenarios
 
-- the UI can save named fixtures to browser local storage
-- a fixture stores the current runner mode, function type, JSON input, and Shopify runner fields
-- fixtures can be exported as JSON and re-imported on another machine or browser
+- the UI can save named local scenarios to browser local storage
+- a scenario stores runner mode, function type, JSON input, Shopify runner fields, and benchmark defaults
+- saving reuses the same scenario name per mode as an overwrite path
+- scenarios can be renamed, deleted, exported as JSON, and imported on another machine or browser
 - legacy fixture storage from the old project name is migrated automatically in the browser
-- fixtures are intended for fast local iteration, not source-controlled test cases
+- scenarios are intended for fast local iteration, not source-controlled test cases
 
 ## Development Commands
 
@@ -208,6 +219,7 @@ npm run benchmark:shopify -- --help
 npm run lint:frontend
 npm run lint:backend
 npm run test:backend
+npm run test:frontend
 npm run test:e2e
 ```
 
@@ -230,14 +242,26 @@ Frontend:
 cd frontend
 npm run build
 npm run lint
+npm test
 ```
 
-## Next Steps
+## Known Limitations
 
-- make the real Shopify runner the primary path and reduce reliance on mock mode
-- add Shopify Function templates per target, not just per simplified function type
-- improve backend validation for malformed Shopify payloads
-- add frontend tests for fixture workflows and runner state transitions
+- Shopify mode still depends on local Shopify CLI metadata and a buildable local function directory
+- local benchmark numbers include machine, OS, and runner overhead
+- the workbench does not sandbox untrusted Wasm
+- mock mode is intentionally approximate and should not be treated as a Shopify-accurate runtime
+
+## Roadmap
+
+- add per-target official Shopify templates and example scenarios
+- add a richer benchmark UX with saved benchmark presets and easier comparisons
+- add more real-function validation coverage and clearer Shopify-specific remediation messages
+- publish a clean example package and expand contributor docs
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for local validation commands and contribution guidelines.
 
 ## Performance Notes
 

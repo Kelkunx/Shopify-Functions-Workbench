@@ -24,12 +24,14 @@ export class RunController {
     @Body() body: RunRequestDto,
   ): Promise<RunResponse> {
     return this.runService.runFunction({
+      benchmarkIterations: body.benchmarkIterations,
+      benchmarkWarmup: body.benchmarkWarmup,
+      exportName: body.exportName,
       wasmFile,
       inputJson: body.inputJson,
       functionType: body.functionType,
       functionDir: body.functionDir,
       target: body.target,
-      exportName: body.exportName,
     });
   }
 }

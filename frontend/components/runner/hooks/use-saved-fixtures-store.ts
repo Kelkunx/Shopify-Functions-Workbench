@@ -24,9 +24,27 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
     [activeRunnerMode, allSavedFixtures],
   );
 
-  function saveSavedFixture(savedFixture: SavedFixture) {
+  function upsertSavedFixture(savedFixture: SavedFixture) {
     setAllSavedFixtures((currentSavedFixtures) => {
-      const nextSavedFixtures = [savedFixture, ...currentSavedFixtures];
+      const existingFixtureIndex = currentSavedFixtures.findIndex(
+        (currentSavedFixture) =>
+          currentSavedFixture.runnerMode === savedFixture.runnerMode &&
+          currentSavedFixture.name.toLowerCase() === savedFixture.name.toLowerCase(),
+      );
+
+      const nextSavedFixtures =
+        existingFixtureIndex >= 0
+          ? currentSavedFixtures.map((currentSavedFixture, fixtureIndex) =>
+              fixtureIndex === existingFixtureIndex
+                ? {
+                    ...currentSavedFixture,
+                    ...savedFixture,
+                    id: currentSavedFixture.id,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : currentSavedFixture,
+            )
+          : [{ ...savedFixture, updatedAt: new Date().toISOString() }, ...currentSavedFixtures];
 
       persistSavedFixtures(nextSavedFixtures);
 
@@ -34,6 +52,51 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
     });
 
     setFixturesTransferFeedback("");
+  }
+
+  function renameSavedFixture(savedFixtureId: string, nextName: string) {
+    const trimmedName = nextName.trim();
+
+    if (!trimmedName) {
+      setFixturesTransferFeedback("Scenario name cannot be empty.");
+      return;
+    }
+
+    setAllSavedFixtures((currentSavedFixtures) => {
+      const nextSavedFixtures = currentSavedFixtures.map((savedFixture) =>
+        savedFixture.id === savedFixtureId
+          ? {
+              ...savedFixture,
+              name: trimmedName,
+              updatedAt: new Date().toISOString(),
+            }
+          : savedFixture,
+      );
+
+      persistSavedFixtures(nextSavedFixtures);
+
+      return nextSavedFixtures;
+    });
+
+    setFixturesTransferFeedback("Scenario renamed.");
+  }
+
+  function markFixtureUsed(savedFixtureId: string) {
+    setAllSavedFixtures((currentSavedFixtures) => {
+      const nextSavedFixtures = currentSavedFixtures.map((savedFixture) =>
+        savedFixture.id === savedFixtureId
+          ? {
+              ...savedFixture,
+              lastUsedAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+          : savedFixture,
+      );
+
+      persistSavedFixtures(nextSavedFixtures);
+
+      return nextSavedFixtures;
+    });
   }
 
   function deleteSavedFixture(savedFixtureId: string) {
@@ -112,7 +175,9 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
     exportVisibleFixtures,
     fixturesTransferFeedback,
     importSavedFixturesFile,
-    saveSavedFixture,
+    markFixtureUsed,
+    renameSavedFixture,
+    upsertSavedFixture,
     visibleSavedFixtures,
   };
 }

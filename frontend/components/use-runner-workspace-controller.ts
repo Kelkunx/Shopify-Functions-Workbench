@@ -14,6 +14,8 @@ export function useRunnerWorkspaceController() {
     activeTemplate,
     availableTemplates,
     applySavedFixture,
+    currentBenchmarkIterations,
+    currentBenchmarkWarmup,
     currentExportName,
     currentFixtureName,
     currentFunctionDir,
@@ -23,6 +25,8 @@ export function useRunnerWorkspaceController() {
     currentWasmFile,
     jsonValidationError,
     selectedTemplateId,
+    setCurrentBenchmarkIterations,
+    setCurrentBenchmarkWarmup,
     setCurrentExportName,
     setCurrentFixtureName,
     setCurrentFunctionDir,
@@ -39,16 +43,22 @@ export function useRunnerWorkspaceController() {
     exportVisibleFixtures,
     fixturesTransferFeedback,
     importSavedFixturesFile,
-    saveSavedFixture,
+    markFixtureUsed,
+    renameSavedFixture,
+    upsertSavedFixture,
     visibleSavedFixtures,
   } = useSavedFixturesStore(activeRunnerMode);
   const {
+    activeExecutionKind,
     isRunInFlight,
+    runBenchmark,
     runFunction,
     runRequestError,
     runResponse,
     setRunRequestError,
   } = useRunnerExecution({
+    currentBenchmarkIterations,
+    currentBenchmarkWarmup,
     currentExportName,
     currentFunctionDir,
     currentFunctionType,
@@ -96,28 +106,47 @@ export function useRunnerWorkspaceController() {
 
     const savedFixture: SavedFixture = {
       id: crypto.randomUUID(),
+      benchmarkIterations: currentBenchmarkIterations,
+      benchmarkWarmup: currentBenchmarkWarmup,
       name: trimmedFixtureName,
       createdAt: new Date().toISOString(),
       exportName: currentExportName,
       functionDir: currentFunctionDir,
       functionType: currentFunctionType,
       inputJson: currentInputJson,
+      lastUsedAt: null,
       runnerMode: activeRunnerMode,
       target: currentTarget,
+      updatedAt: new Date().toISOString(),
     };
 
-    saveSavedFixture(savedFixture);
+    upsertSavedFixture(savedFixture);
     setCurrentFixtureName("");
     setRunRequestError("");
   }
 
   function loadSavedFixture(savedFixture: SavedFixture) {
     applySavedFixture(savedFixture);
+    markFixtureUsed(savedFixture.id);
     setRunRequestError("");
   }
 
   function deleteSavedFixture(savedFixtureId: string) {
+    if (!window.confirm("Delete this saved scenario?")) {
+      return;
+    }
+
     removeSavedFixture(savedFixtureId);
+  }
+
+  function renameScenario(savedFixture: SavedFixture) {
+    const nextName = window.prompt("Rename saved scenario", savedFixture.name);
+
+    if (!nextName || nextName.trim() === savedFixture.name) {
+      return;
+    }
+
+    renameSavedFixture(savedFixture.id, nextName);
   }
 
   async function importFixtureFile(importFile: File | null) {
@@ -135,7 +164,10 @@ export function useRunnerWorkspaceController() {
 
   return {
     activeRunnerMode,
+    activeExecutionKind,
     availableTemplates,
+    currentBenchmarkIterations,
+    currentBenchmarkWarmup,
     copyRunOutput,
     currentExportName,
     currentFixtureName,
@@ -155,11 +187,15 @@ export function useRunnerWorkspaceController() {
     loadSavedFixture,
     loadSelectedTemplate,
     outputCopyFeedback,
+    renameScenario,
+    runBenchmark,
     runFunction,
     runRequestError,
     runResponse,
     saveCurrentFixture,
     selectedTemplateId,
+    setCurrentBenchmarkIterations,
+    setCurrentBenchmarkWarmup,
     setCurrentExportName,
     setCurrentFixtureName,
     setCurrentFunctionDir,

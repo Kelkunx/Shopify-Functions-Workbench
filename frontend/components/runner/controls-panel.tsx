@@ -16,10 +16,13 @@ import {
 import { runnerUiClassNames } from "./runner-ui-class-names";
 
 export function RunnerControlsPanel({
+  currentBenchmarkIterations,
+  currentBenchmarkWarmup,
   currentExportName,
   currentFixtureName,
   currentFunctionDir,
   currentFunctionType,
+  lastRunResponse,
   onDeleteSavedFixture,
   onExportNameChange,
   onExportFixtures,
@@ -27,9 +30,12 @@ export function RunnerControlsPanel({
   onFixtureSave,
   onFunctionDirChange,
   onImportFixtures,
+  onBenchmarkIterationsChange,
+  onBenchmarkWarmupChange,
   onFunctionTypeChange,
   onLoadFixture,
   onLoadSelectedTemplate,
+  onRenameScenario,
   onSelectedTemplateChange,
   onTargetChange,
   onWasmFileChange,
@@ -41,10 +47,22 @@ export function RunnerControlsPanel({
   transferFeedback,
   wasmFile,
 }: {
+  currentBenchmarkIterations: number;
+  currentBenchmarkWarmup: number;
   currentExportName: string;
   currentFixtureName: string;
   currentFunctionDir: string;
   currentFunctionType: FunctionType;
+  lastRunResponse: {
+    diagnostics: {
+      actualRunnerMode: RunnerMode;
+      shopify?: {
+        target: string;
+        targetResolved: boolean;
+        wasmOverrideActive: boolean;
+      };
+    };
+  } | null;
   onDeleteSavedFixture: (savedFixtureId: string) => void;
   onExportNameChange: (value: string) => void;
   onExportFixtures: () => void;
@@ -52,9 +70,12 @@ export function RunnerControlsPanel({
   onFixtureSave: () => void;
   onFunctionDirChange: (value: string) => void;
   onImportFixtures: (file: File | null) => void;
+  onBenchmarkIterationsChange: (value: number) => void;
+  onBenchmarkWarmupChange: (value: number) => void;
   onFunctionTypeChange: (value: FunctionType) => void;
   onLoadFixture: (savedFixture: SavedFixture) => void;
   onLoadSelectedTemplate: () => void;
+  onRenameScenario: (savedFixture: SavedFixture) => void;
   onSelectedTemplateChange: (value: string) => void;
   onTargetChange: (value: string) => void;
   onWasmFileChange: (file: File | null) => void;
@@ -66,6 +87,16 @@ export function RunnerControlsPanel({
   transferFeedback: string;
   wasmFile: File | null;
 }) {
+  const currentShopifyConfigLooksReady =
+    runnerMode === "shopify" &&
+    currentFunctionDir.trim().length > 0 &&
+    target.trim().length > 0;
+  const currentTargetResolved =
+    runnerMode === "shopify" &&
+    lastRunResponse?.diagnostics.actualRunnerMode === "shopify" &&
+    lastRunResponse.diagnostics.shopify?.targetResolved === true &&
+    lastRunResponse.diagnostics.shopify.target === target.trim();
+
   return (
     <SidebarPanel>
       <SidebarSection title="Runner">
@@ -104,7 +135,7 @@ export function RunnerControlsPanel({
         <Field
           helper={
             runnerMode === "mock"
-              ? "Optional in mock mode. The backend can run without a real file. Only run trusted Wasm locally."
+              ? "Optional in assistive mock mode. The backend can run without a real file. Only run trusted Wasm locally."
               : "Optional override when you want to run a local Shopify function with a different build output. Only run trusted Wasm locally."
           }
           label="Wasm file"
@@ -123,8 +154,14 @@ export function RunnerControlsPanel({
 
       {runnerMode === "shopify" ? (
         <SidebarSection title="Shopify runner">
+          <StateBadge tone={currentShopifyConfigLooksReady ? "neutral" : "danger"}>
+            {currentShopifyConfigLooksReady
+              ? "Shopify runner fields are present."
+              : "functionDir and target are required for real Shopify runs."}
+          </StateBadge>
+
           <Field
-            helper="Local function directory. When present with a target, the backend switches from mock mode to the Shopify runner."
+            helper="Local function directory. This is the primary path for serious local validation."
             label="functionDir"
           >
             <TextInput
@@ -155,15 +192,53 @@ export function RunnerControlsPanel({
               value={currentExportName}
             />
           </Field>
+
+          <div className="space-y-2">
+            {currentTargetResolved ? (
+              <StateBadge tone="neutral">Target resolved on the last successful run.</StateBadge>
+            ) : null}
+            {wasmFile ? (
+              <StateBadge tone="neutral">
+                Wasm override selected. This run will not use the built Shopify Wasm.
+              </StateBadge>
+            ) : null}
+          </div>
         </SidebarSection>
       ) : null}
 
+      <SidebarSection title="Benchmark">
+        <Field
+          helper="Warm-up runs are excluded from the averages. Use this to compare local runner performance without the browser."
+          label="Iterations"
+        >
+          <TextInput
+            min={1}
+            onChange={(event) =>
+              onBenchmarkIterationsChange(Number.parseInt(event.target.value || "1", 10))
+            }
+            type="number"
+            value={currentBenchmarkIterations}
+          />
+        </Field>
+        <Field helper="Default is 1. Keep this lower than iterations." label="Warm-up runs">
+          <TextInput
+            min={0}
+            onChange={(event) =>
+              onBenchmarkWarmupChange(Number.parseInt(event.target.value || "0", 10))
+            }
+            type="number"
+            value={currentBenchmarkWarmup}
+          />
+        </Field>
+      </SidebarSection>
+
       <SavedFixturesSection
-        currentFixtureName={currentFixtureName}
+        currentScenarioName={currentFixtureName}
         onDeleteSavedFixture={onDeleteSavedFixture}
         onExportFixtures={onExportFixtures}
-        onFixtureNameChange={onFixtureNameChange}
-        onFixtureSave={onFixtureSave}
+        onRenameScenario={onRenameScenario}
+        onScenarioNameChange={onFixtureNameChange}
+        onScenarioSave={onFixtureSave}
         onImportFixtures={onImportFixtures}
         onLoadFixture={onLoadFixture}
         savedFixtures={savedFixtures}
@@ -174,21 +249,23 @@ export function RunnerControlsPanel({
 }
 
 function SavedFixturesSection({
-  currentFixtureName,
+  currentScenarioName,
   onDeleteSavedFixture,
   onExportFixtures,
-  onFixtureNameChange,
-  onFixtureSave,
+  onRenameScenario,
+  onScenarioNameChange,
+  onScenarioSave,
   onImportFixtures,
   onLoadFixture,
   savedFixtures,
   transferFeedback,
 }: {
-  currentFixtureName: string;
+  currentScenarioName: string;
   onDeleteSavedFixture: (savedFixtureId: string) => void;
   onExportFixtures: () => void;
-  onFixtureNameChange: (value: string) => void;
-  onFixtureSave: () => void;
+  onRenameScenario: (savedFixture: SavedFixture) => void;
+  onScenarioNameChange: (value: string) => void;
+  onScenarioSave: () => void;
   onImportFixtures: (file: File | null) => void;
   onLoadFixture: (savedFixture: SavedFixture) => void;
   savedFixtures: SavedFixture[];
@@ -197,20 +274,20 @@ function SavedFixturesSection({
   const importInputReference = useRef<HTMLInputElement | null>(null);
 
   return (
-    <SidebarSection title="Saved fixtures">
+    <SidebarSection title="Saved scenarios">
       <Field
-        helper="Saved locally in the browser for the current mode. Export and import use JSON."
-        label="Fixture name"
+        helper="Reusable local scenarios for the current runner mode. Save will overwrite by name inside the same mode."
+        label="Scenario name"
       >
         <div className="flex gap-2">
           <TextInput
             className="min-w-0 flex-1"
-            onChange={(event) => onFixtureNameChange(event.target.value)}
+            onChange={(event) => onScenarioNameChange(event.target.value)}
             placeholder="black-friday-check"
             type="text"
-            value={currentFixtureName}
+            value={currentScenarioName}
           />
-          <SecondaryButton onClick={onFixtureSave} type="button">
+          <SecondaryButton onClick={onScenarioSave} type="button">
             Save
           </SecondaryButton>
         </div>
@@ -244,13 +321,14 @@ function SavedFixturesSection({
 
       <div className="space-y-2">
         {savedFixtures.length === 0 ? (
-          <EmptyState>No saved fixtures for this mode.</EmptyState>
+          <EmptyState>No saved scenarios for this mode.</EmptyState>
         ) : (
           savedFixtures.map((savedFixture) => (
             <SavedFixtureCard
               key={savedFixture.id}
               onDelete={() => onDeleteSavedFixture(savedFixture.id)}
               onLoad={() => onLoadFixture(savedFixture)}
+              onRename={() => onRenameScenario(savedFixture)}
               savedFixture={savedFixture}
             />
           ))
@@ -263,10 +341,12 @@ function SavedFixturesSection({
 function SavedFixtureCard({
   onDelete,
   onLoad,
+  onRename,
   savedFixture,
 }: {
   onDelete: () => void;
   onLoad: () => void;
+  onRename: () => void;
   savedFixture: SavedFixture;
 }) {
   return (
@@ -277,18 +357,27 @@ function SavedFixtureCard({
             {savedFixture.name}
           </div>
           <div className="mt-1 text-xs text-muted">
-            {savedFixture.functionType} • {formatTimestamp(savedFixture.createdAt)}
+            {savedFixture.runnerMode} • {savedFixture.functionType} • updated{" "}
+            {formatTimestamp(savedFixture.updatedAt)}
           </div>
         </div>
         <div className="flex items-center gap-1">
           <FixtureActionButton onClick={onLoad} type="button">
             Load
           </FixtureActionButton>
+          <FixtureActionButton onClick={onRename} type="button">
+            Rename
+          </FixtureActionButton>
           <FixtureActionButton onClick={onDelete} tone="danger" type="button">
             Delete
           </FixtureActionButton>
         </div>
       </div>
+      {savedFixture.lastUsedAt ? (
+        <div className="mt-2 text-xs text-muted">
+          Last used {formatTimestamp(savedFixture.lastUsedAt)}
+        </div>
+      ) : null}
       {savedFixture.runnerMode === "shopify" && savedFixture.target ? (
         <div className="mt-2 truncate text-xs text-muted">{savedFixture.target}</div>
       ) : null}

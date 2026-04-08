@@ -10,7 +10,10 @@ import { useRunnerWorkspaceController } from "./use-runner-workspace-controller"
 export function RunnerWorkspace() {
   const {
     activeRunnerMode,
+    activeExecutionKind,
     availableTemplates,
+    currentBenchmarkIterations,
+    currentBenchmarkWarmup,
     copyRunOutput,
     currentExportName,
     currentFixtureName,
@@ -30,11 +33,15 @@ export function RunnerWorkspace() {
     loadSavedFixture,
     loadSelectedTemplate,
     outputCopyFeedback,
+    renameScenario,
+    runBenchmark,
     runFunction,
     runRequestError,
     runResponse,
     saveCurrentFixture,
     selectedTemplateId,
+    setCurrentBenchmarkIterations,
+    setCurrentBenchmarkWarmup,
     setCurrentExportName,
     setCurrentFixtureName,
     setCurrentFunctionDir,
@@ -52,7 +59,9 @@ export function RunnerWorkspace() {
     <>
       <div className="flex min-h-screen flex-col bg-background text-foreground">
         <WorkspaceHeader
+          activeExecutionKind={activeExecutionKind}
           isRunInFlight={isRunInFlight}
+          onBenchmark={runBenchmark}
           jsonValidationError={jsonValidationError}
           onFormatJson={formatCurrentInputJson}
           onRun={runFunction}
@@ -63,10 +72,15 @@ export function RunnerWorkspace() {
         <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:px-8 lg:py-6">
           <div className="grid min-h-0 flex-1 gap-5 xl:grid-cols-[272px_minmax(0,1fr)_360px]">
             <RunnerControlsPanel
+              currentBenchmarkIterations={currentBenchmarkIterations}
+              currentBenchmarkWarmup={currentBenchmarkWarmup}
               currentExportName={currentExportName}
               currentFixtureName={currentFixtureName}
               currentFunctionDir={currentFunctionDir}
               currentFunctionType={currentFunctionType}
+              lastRunResponse={runResponse}
+              onBenchmarkIterationsChange={setCurrentBenchmarkIterations}
+              onBenchmarkWarmupChange={setCurrentBenchmarkWarmup}
               onDeleteSavedFixture={deleteSavedFixture}
               onExportNameChange={setCurrentExportName}
               onExportFixtures={exportVisibleFixtures}
@@ -77,6 +91,7 @@ export function RunnerWorkspace() {
               onFunctionTypeChange={updateFunctionType}
               onLoadFixture={loadSavedFixture}
               onLoadSelectedTemplate={loadSelectedTemplate}
+              onRenameScenario={renameScenario}
               onSelectedTemplateChange={setSelectedTemplateId}
               onTargetChange={setCurrentTarget}
               onWasmFileChange={setCurrentWasmFile}

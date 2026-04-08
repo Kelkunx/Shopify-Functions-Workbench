@@ -5,15 +5,21 @@ import {
 } from './dto/run-request.dto';
 import { type ParsedRunRequest } from './types/parsed-run-request.type';
 import { type RunFunctionParams } from './types/run-function-params.type';
+import { type RunErrorDetail } from './types/run-response.type';
 
 interface ParsedRunRequestResult {
-  errors: string[];
+  errorDetails: RunErrorDetail[];
   parsedRequest: ParsedRunRequest | null;
 }
+
+const defaultBenchmarkIterations = 5;
+const defaultBenchmarkWarmup = 1;
 
 @Injectable()
 export class RunRequestParserService {
   parse({
+    benchmarkIterations,
+    benchmarkWarmup,
     exportName,
     functionDir,
     functionType,
@@ -21,24 +27,51 @@ export class RunRequestParserService {
     target,
     wasmFile,
   }: RunFunctionParams): ParsedRunRequestResult {
-    const errors: string[] = [];
+    const errorDetails: RunErrorDetail[] = [];
     const trimmedFunctionDir = functionDir?.trim();
     const trimmedTarget = target?.trim();
     const trimmedExportName = exportName?.trim();
     const requestedFunctionType = functionType?.trim();
     const hasRealRunnerConfig = Boolean(trimmedFunctionDir && trimmedTarget);
+    const benchmarkEnabled =
+      benchmarkIterations !== undefined || benchmarkWarmup !== undefined;
+    const resolvedBenchmarkIterations = benchmarkEnabled
+      ? (benchmarkIterations ?? defaultBenchmarkIterations)
+      : 1;
+    const resolvedBenchmarkWarmup = benchmarkEnabled
+      ? (benchmarkWarmup ?? defaultBenchmarkWarmup)
+      : 0;
 
     if (wasmFile?.originalname && !wasmFile.originalname.endsWith('.wasm')) {
-      errors.push('The uploaded file must have a .wasm extension.');
+      errorDetails.push({
+        code: 'INVALID_WASM_FILE',
+        message: 'The uploaded file must have a .wasm extension.',
+        source: 'request',
+      });
     }
 
     if (
       (trimmedFunctionDir && !trimmedTarget) ||
       (!trimmedFunctionDir && trimmedTarget)
     ) {
-      errors.push(
-        'Both functionDir and target are required to use the real Shopify runner.',
-      );
+      errorDetails.push({
+        code: 'SHOPIFY_TARGET_NOT_FOUND',
+        message:
+          'Both functionDir and target are required to use the real Shopify runner.',
+        source: 'request',
+      });
+    }
+
+    if (
+      benchmarkEnabled &&
+      resolvedBenchmarkWarmup >= resolvedBenchmarkIterations
+    ) {
+      errorDetails.push({
+        code: 'BENCHMARK_SETTINGS_INVALID',
+        message:
+          'benchmarkWarmup must be lower than benchmarkIterations so at least one measured run remains.',
+        source: 'benchmark',
+      });
     }
 
     let parsedInput: Record<string, unknown> | null = null;
@@ -46,21 +79,30 @@ export class RunRequestParserService {
     try {
       parsedInput = JSON.parse(inputJson) as Record<string, unknown>;
     } catch {
-      errors.push('Input JSON is invalid.');
+      errorDetails.push({
+        code: 'INPUT_JSON_INVALID',
+        message: 'Input JSON is invalid.',
+        source: 'request',
+      });
     }
 
-    if (errors.length > 0 || !parsedInput) {
+    if (errorDetails.length > 0 || !parsedInput) {
       return {
-        errors,
+        errorDetails,
         parsedRequest: null,
       };
     }
 
     return {
-      errors: [],
+      errorDetails: [],
       parsedRequest: {
+        benchmarkEnabled,
+        benchmarkIterations: resolvedBenchmarkIterations,
+        benchmarkWarmup: resolvedBenchmarkWarmup,
         hasRealRunnerConfig,
-        normalizedFunctionType: this.normalizeFunctionType(requestedFunctionType),
+        normalizedFunctionType: this.normalizeFunctionType(
+          requestedFunctionType,
+        ),
         parsedInput,
         requestedFunctionType,
         trimmedExportName,
@@ -71,9 +113,7 @@ export class RunRequestParserService {
     };
   }
 
-  private normalizeFunctionType(
-    functionType?: string,
-  ): SupportedFunctionType {
+  private normalizeFunctionType(functionType?: string): SupportedFunctionType {
     if (
       functionType &&
       SUPPORTED_FUNCTION_TYPES.includes(functionType as SupportedFunctionType)

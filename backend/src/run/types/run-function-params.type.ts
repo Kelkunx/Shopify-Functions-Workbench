@@ -1,10 +1,12 @@
 import { type UploadedWasmFile } from './uploaded-wasm-file.type';
 
 export interface RunFunctionParams {
-  wasmFile?: UploadedWasmFile;
-  inputJson: string;
-  functionType?: string;
-  functionDir?: string;
-  target?: string;
+  benchmarkIterations?: number;
+  benchmarkWarmup?: number;
   exportName?: string;
+  functionDir?: string;
+  functionType?: string;
+  inputJson: string;
+  target?: string;
+  wasmFile?: UploadedWasmFile;
 }

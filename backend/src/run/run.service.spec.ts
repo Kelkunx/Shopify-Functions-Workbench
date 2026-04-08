@@ -1,10 +1,12 @@
 import { promises as fs } from 'node:fs';
+import type { Stats } from 'node:fs';
 import { MockFunctionRunnerService } from './mock-function-runner.service';
 import { RunRequestParserService } from './run-request-parser.service';
 import { RunService } from './run.service';
 import { ShopifyFunctionRunnerService } from './shopify-function-runner.service';
 
 describe('RunService', () => {
+  const actualFsStat = fs.stat.bind(fs) as typeof fs.stat;
   let getFunctionInfoMock: jest.Mock;
   let requestParser: RunRequestParserService;
   let runFunctionMock: jest.Mock;
@@ -27,6 +29,17 @@ describe('RunService', () => {
       requestParser,
       shopifyRunner,
     );
+
+    jest.spyOn(fs, 'stat').mockImplementation((filePath) => {
+      if (filePath === '/tmp/function.wasm') {
+        return Promise.resolve({
+          isDirectory: () => false,
+          isFile: () => true,
+        } as Stats);
+      }
+
+      return actualFsStat(filePath);
+    });
   });
 
   it('returns a mock success response for a supported function', async () => {
@@ -66,6 +79,13 @@ describe('RunService', () => {
     expect(response.success).toBe(false);
     expect(response.output).toEqual({});
     expect(response.errors).toEqual(['Input JSON is invalid.']);
+    expect(response.errorDetails).toEqual([
+      {
+        code: 'INPUT_JSON_INVALID',
+        message: 'Input JSON is invalid.',
+        source: 'request',
+      },
+    ]);
   });
 
   it('allows running without an uploaded wasm while the runner is mocked', async () => {
@@ -146,6 +166,17 @@ describe('RunService', () => {
     expect(response.output).toEqual({
       discounts: [],
     });
+    expect(response.diagnostics).toMatchObject({
+      actualRunnerMode: 'shopify',
+      requestedRunnerMode: 'shopify',
+      shopify: {
+        effectiveExportName: 'purchase-product-discount-run',
+        target: 'purchase.product-discount.run',
+        targetResolved: true,
+        usedUploadedWasm: false,
+        wasmOverrideActive: false,
+      },
+    });
     expect(getFunctionInfoMock).toHaveBeenCalledWith(__dirname);
     expect(runFunctionMock).toHaveBeenCalledWith(
       {
@@ -202,7 +233,7 @@ describe('RunService', () => {
     expect(runFunctionMock).toHaveBeenCalledWith(
       expect.any(Object),
       '/tmp/function-runner',
-      '/tmp/uploaded-function-dir/uploaded.wasm',
+      '/tmp/uploaded-function-dir/uploaded-function.wasm',
       '/tmp/input.graphql',
       '/tmp/schema.graphql',
     );
@@ -253,5 +284,89 @@ describe('RunService', () => {
       '/tmp/input.graphql',
       '/tmp/schema.graphql',
     );
+  });
+
+  it('returns a specific error when the target does not exist in Shopify metadata', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {},
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    const response = await service.runFunction({
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'SHOPIFY_TARGET_NOT_FOUND',
+        source: 'shopify-config',
+      }),
+    ]);
+  });
+
+  it('returns a structured error when the Shopify runner output is malformed', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    runFunctionMock.mockResolvedValue({
+      error:
+        "function-runner returned unexpected format - missing 'output' field.",
+      result: null,
+    });
+
+    const response = await service.runFunction({
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'SHOPIFY_OUTPUT_INVALID',
+        source: 'shopify-runner',
+      }),
+    ]);
+  });
+
+  it('returns benchmark results with warmup exclusion and aggregate timings', async () => {
+    const response = await service.runFunction({
+      benchmarkIterations: 3,
+      benchmarkWarmup: 1,
+      functionType: 'product-discount',
+      inputJson: JSON.stringify({
+        cart: {
+          lines: [{ id: 'gid://shopify/CartLine/1' }],
+        },
+      }),
+    });
+
+    expect(response.success).toBe(true);
+    expect(response.benchmark).toMatchObject({
+      enabled: true,
+      iterations: 3,
+      measuredRuns: 3,
+      warmupRuns: 1,
+    });
+    expect(response.benchmark?.runs).toHaveLength(4);
+    expect(response.benchmark?.runs[0]?.warmup).toBe(true);
+    expect(response.benchmark?.summary.averageTotalMs).toBeGreaterThanOrEqual(
+      0,
+    );
+    expect(response.diagnostics.benchmarkEnabled).toBe(true);
   });
 });

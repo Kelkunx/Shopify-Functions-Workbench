@@ -67,7 +67,7 @@ export interface RunnerFormState {
   benchmarkIterations: number;
   benchmarkWarmup: number;
   exportName: string;
-  fixtureName: string;
+  scenarioName: string;
   functionDir: string;
   functionType: FunctionType;
   inputJson: string;

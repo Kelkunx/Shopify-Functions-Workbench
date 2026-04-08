@@ -346,7 +346,6 @@ export class RunService {
       const result = await this.shopifyFunctionRunner.runFunction(
         {
           export: effectiveExportName,
-          expectedOutput: {},
           input: parsedInput,
           target,
         },

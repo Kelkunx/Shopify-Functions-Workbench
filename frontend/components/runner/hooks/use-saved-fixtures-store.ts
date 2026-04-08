@@ -7,151 +7,151 @@ import {
   persistSavedFixtures,
   serializeSavedFixturesExport,
   type RunnerMode,
-  type SavedFixture,
+  type SavedScenario,
 } from "@/lib/saved-fixtures";
 
 export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
-  const [allSavedFixtures, setAllSavedFixtures] = useState<SavedFixture[]>(
+  const [allSavedScenarios, setAllSavedScenarios] = useState<SavedScenario[]>(
     () => loadSavedFixtures(),
   );
-  const [fixturesTransferFeedback, setFixturesTransferFeedback] = useState("");
+  const [scenariosTransferFeedback, setScenariosTransferFeedback] = useState("");
 
-  const visibleSavedFixtures = useMemo(
+  const visibleSavedScenarios = useMemo(
     () =>
-      allSavedFixtures.filter(
-        (savedFixture) => savedFixture.runnerMode === activeRunnerMode,
+      allSavedScenarios.filter(
+        (savedScenario) => savedScenario.runnerMode === activeRunnerMode,
       ),
-    [activeRunnerMode, allSavedFixtures],
+    [activeRunnerMode, allSavedScenarios],
   );
 
-  function upsertSavedFixture(savedFixture: SavedFixture) {
-    setAllSavedFixtures((currentSavedFixtures) => {
-      const existingFixtureIndex = currentSavedFixtures.findIndex(
-        (currentSavedFixture) =>
-          currentSavedFixture.runnerMode === savedFixture.runnerMode &&
-          currentSavedFixture.name.toLowerCase() === savedFixture.name.toLowerCase(),
+  function upsertSavedScenario(savedScenario: SavedScenario) {
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const existingScenarioIndex = currentSavedScenarios.findIndex(
+        (currentSavedScenario) =>
+          currentSavedScenario.runnerMode === savedScenario.runnerMode &&
+          currentSavedScenario.name.toLowerCase() === savedScenario.name.toLowerCase(),
       );
 
-      const nextSavedFixtures =
-        existingFixtureIndex >= 0
-          ? currentSavedFixtures.map((currentSavedFixture, fixtureIndex) =>
-              fixtureIndex === existingFixtureIndex
+      const nextSavedScenarios =
+        existingScenarioIndex >= 0
+          ? currentSavedScenarios.map((currentSavedScenario, scenarioIndex) =>
+              scenarioIndex === existingScenarioIndex
                 ? {
-                    ...currentSavedFixture,
-                    ...savedFixture,
-                    id: currentSavedFixture.id,
+                    ...currentSavedScenario,
+                    ...savedScenario,
+                    id: currentSavedScenario.id,
                     updatedAt: new Date().toISOString(),
                   }
-                : currentSavedFixture,
+                : currentSavedScenario,
             )
-          : [{ ...savedFixture, updatedAt: new Date().toISOString() }, ...currentSavedFixtures];
+          : [{ ...savedScenario, updatedAt: new Date().toISOString() }, ...currentSavedScenarios];
 
-      persistSavedFixtures(nextSavedFixtures);
+      persistSavedFixtures(nextSavedScenarios);
 
-      return nextSavedFixtures;
+      return nextSavedScenarios;
     });
 
-    setFixturesTransferFeedback("");
+    setScenariosTransferFeedback("");
   }
 
-  function renameSavedFixture(savedFixtureId: string, nextName: string) {
+  function renameSavedScenario(savedScenarioId: string, nextName: string) {
     const trimmedName = nextName.trim();
 
     if (!trimmedName) {
-      setFixturesTransferFeedback("Scenario name cannot be empty.");
+      setScenariosTransferFeedback("Scenario name cannot be empty.");
       return;
     }
 
-    setAllSavedFixtures((currentSavedFixtures) => {
-      const nextSavedFixtures = currentSavedFixtures.map((savedFixture) =>
-        savedFixture.id === savedFixtureId
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const nextSavedScenarios = currentSavedScenarios.map((savedScenario) =>
+        savedScenario.id === savedScenarioId
           ? {
-              ...savedFixture,
+              ...savedScenario,
               name: trimmedName,
               updatedAt: new Date().toISOString(),
             }
-          : savedFixture,
+          : savedScenario,
       );
 
-      persistSavedFixtures(nextSavedFixtures);
+      persistSavedFixtures(nextSavedScenarios);
 
-      return nextSavedFixtures;
+      return nextSavedScenarios;
     });
 
-    setFixturesTransferFeedback("Scenario renamed.");
+    setScenariosTransferFeedback("Scenario renamed.");
   }
 
-  function markFixtureUsed(savedFixtureId: string) {
-    setAllSavedFixtures((currentSavedFixtures) => {
-      const nextSavedFixtures = currentSavedFixtures.map((savedFixture) =>
-        savedFixture.id === savedFixtureId
+  function markScenarioUsed(savedScenarioId: string) {
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const nextSavedScenarios = currentSavedScenarios.map((savedScenario) =>
+        savedScenario.id === savedScenarioId
           ? {
-              ...savedFixture,
+              ...savedScenario,
               lastUsedAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             }
-          : savedFixture,
+          : savedScenario,
       );
 
-      persistSavedFixtures(nextSavedFixtures);
+      persistSavedFixtures(nextSavedScenarios);
 
-      return nextSavedFixtures;
+      return nextSavedScenarios;
     });
   }
 
-  function deleteSavedFixture(savedFixtureId: string) {
-    setAllSavedFixtures((currentSavedFixtures) => {
-      const nextSavedFixtures = currentSavedFixtures.filter(
-        (savedFixture) => savedFixture.id !== savedFixtureId,
+  function deleteSavedScenario(savedScenarioId: string) {
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const nextSavedScenarios = currentSavedScenarios.filter(
+        (savedScenario) => savedScenario.id !== savedScenarioId,
       );
 
-      persistSavedFixtures(nextSavedFixtures);
+      persistSavedFixtures(nextSavedScenarios);
 
-      return nextSavedFixtures;
+      return nextSavedScenarios;
     });
 
-    setFixturesTransferFeedback("");
+    setScenariosTransferFeedback("");
   }
 
-  async function importSavedFixturesFile(importFile: File) {
+  async function importSavedScenariosFile(importFile: File) {
     const importedText = await importFile.text();
-    const importedFixtures = parseImportedSavedFixtures(importedText);
+    const importedScenarios = parseImportedSavedFixtures(importedText);
 
-    if (importedFixtures.length === 0) {
-      setFixturesTransferFeedback("No valid fixtures were found in that file.");
+    if (importedScenarios.length === 0) {
+      setScenariosTransferFeedback("No valid scenarios were found in that file.");
       return;
     }
 
-    const normalizedImportedFixtures = importedFixtures.map((savedFixture) => ({
-      ...savedFixture,
+    const normalizedImportedScenarios = importedScenarios.map((savedScenario) => ({
+      ...savedScenario,
       id: crypto.randomUUID(),
     }));
 
-    setAllSavedFixtures((currentSavedFixtures) => {
-      const nextSavedFixtures = [
-        ...normalizedImportedFixtures,
-        ...currentSavedFixtures,
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const nextSavedScenarios = [
+        ...normalizedImportedScenarios,
+        ...currentSavedScenarios,
       ];
 
-      persistSavedFixtures(nextSavedFixtures);
+      persistSavedFixtures(nextSavedScenarios);
 
-      return nextSavedFixtures;
+      return nextSavedScenarios;
     });
 
-    setFixturesTransferFeedback(
-      `${normalizedImportedFixtures.length} fixture${
-        normalizedImportedFixtures.length > 1 ? "s" : ""
+    setScenariosTransferFeedback(
+      `${normalizedImportedScenarios.length} scenario${
+        normalizedImportedScenarios.length > 1 ? "s" : ""
       } imported.`,
     );
   }
 
-  function exportVisibleFixtures() {
-    if (visibleSavedFixtures.length === 0) {
-      setFixturesTransferFeedback("No fixtures to export for the current mode.");
+  function exportVisibleScenarios() {
+    if (visibleSavedScenarios.length === 0) {
+      setScenariosTransferFeedback("No scenarios to export for the current mode.");
       return;
     }
 
-    const exportContent = serializeSavedFixturesExport(visibleSavedFixtures);
+    const exportContent = serializeSavedFixturesExport(visibleSavedScenarios);
     const exportBlob = new Blob([exportContent], {
       type: "application/json;charset=utf-8",
     });
@@ -163,21 +163,21 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
     downloadLink.click();
     window.URL.revokeObjectURL(exportUrl);
 
-    setFixturesTransferFeedback(
-      `${visibleSavedFixtures.length} fixture${
-        visibleSavedFixtures.length > 1 ? "s" : ""
+    setScenariosTransferFeedback(
+      `${visibleSavedScenarios.length} scenario${
+        visibleSavedScenarios.length > 1 ? "s" : ""
       } exported.`,
     );
   }
 
   return {
-    deleteSavedFixture,
-    exportVisibleFixtures,
-    fixturesTransferFeedback,
-    importSavedFixturesFile,
-    markFixtureUsed,
-    renameSavedFixture,
-    upsertSavedFixture,
-    visibleSavedFixtures,
+    deleteSavedScenario,
+    exportVisibleScenarios,
+    importSavedScenariosFile,
+    markScenarioUsed,
+    renameSavedScenario,
+    scenariosTransferFeedback,
+    upsertSavedScenario,
+    visibleSavedScenarios,
   };
 }

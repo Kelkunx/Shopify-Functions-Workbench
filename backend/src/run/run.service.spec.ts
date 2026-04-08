@@ -181,7 +181,6 @@ describe('RunService', () => {
     expect(runFunctionMock).toHaveBeenCalledWith(
       {
         export: 'purchase-product-discount-run',
-        expectedOutput: {},
         input: { cart: { lines: [] } },
         target: 'purchase.product-discount.run',
       },

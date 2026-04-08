@@ -14,7 +14,7 @@ describe("useRunnerFormState", () => {
     const { result } = renderHook(() => useRunnerFormState());
 
     act(() => {
-      result.current.applySavedFixture({
+      result.current.applySavedScenario({
         benchmarkIterations: 7,
         benchmarkWarmup: 2,
         createdAt: "2026-04-01T10:00:00.000Z",

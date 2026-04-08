@@ -1,7 +1,7 @@
 "use client";
 
 import { formatTemplateInput } from "@/lib/function-templates";
-import { type SavedFixture } from "@/lib/saved-fixtures";
+import { type SavedScenario } from "@/lib/saved-fixtures";
 import { formatJsonString } from "./runner-workspace.helpers";
 import { useRunOutputState } from "./runner/hooks/use-run-output-state";
 import { useRunnerExecution } from "./runner/hooks/use-runner-execution";
@@ -13,11 +13,11 @@ export function useRunnerWorkspaceController() {
     activeRunnerMode,
     activeTemplate,
     availableTemplates,
-    applySavedFixture,
+    applySavedScenario,
     currentBenchmarkIterations,
     currentBenchmarkWarmup,
     currentExportName,
-    currentFixtureName,
+    currentScenarioName,
     currentFunctionDir,
     currentFunctionType,
     currentInputJson,
@@ -28,7 +28,7 @@ export function useRunnerWorkspaceController() {
     setCurrentBenchmarkIterations,
     setCurrentBenchmarkWarmup,
     setCurrentExportName,
-    setCurrentFixtureName,
+    setCurrentScenarioName,
     setCurrentFunctionDir,
     setCurrentInputJson,
     setCurrentTarget,
@@ -39,14 +39,14 @@ export function useRunnerWorkspaceController() {
   } = useRunnerFormState();
 
   const {
-    deleteSavedFixture: removeSavedFixture,
-    exportVisibleFixtures,
-    fixturesTransferFeedback,
-    importSavedFixturesFile,
-    markFixtureUsed,
-    renameSavedFixture,
-    upsertSavedFixture,
-    visibleSavedFixtures,
+    deleteSavedScenario: removeSavedScenario,
+    exportVisibleScenarios,
+    importSavedScenariosFile,
+    markScenarioUsed,
+    renameSavedScenario: renameStoredScenario,
+    scenariosTransferFeedback,
+    upsertSavedScenario,
+    visibleSavedScenarios,
   } = useSavedFixturesStore(activeRunnerMode);
   const {
     activeExecutionKind,
@@ -96,19 +96,19 @@ export function useRunnerWorkspaceController() {
     }
   }
 
-  function saveCurrentFixture() {
-    const trimmedFixtureName = currentFixtureName.trim();
+  function saveCurrentScenario() {
+    const trimmedScenarioName = currentScenarioName.trim();
 
-    if (!trimmedFixtureName) {
-      setRunRequestError("Fixture name is required.");
+    if (!trimmedScenarioName) {
+      setRunRequestError("Scenario name is required.");
       return;
     }
 
-    const savedFixture: SavedFixture = {
+    const savedScenario: SavedScenario = {
       id: crypto.randomUUID(),
       benchmarkIterations: currentBenchmarkIterations,
       benchmarkWarmup: currentBenchmarkWarmup,
-      name: trimmedFixtureName,
+      name: trimmedScenarioName,
       createdAt: new Date().toISOString(),
       exportName: currentExportName,
       functionDir: currentFunctionDir,
@@ -120,45 +120,45 @@ export function useRunnerWorkspaceController() {
       updatedAt: new Date().toISOString(),
     };
 
-    upsertSavedFixture(savedFixture);
-    setCurrentFixtureName("");
+    upsertSavedScenario(savedScenario);
+    setCurrentScenarioName("");
     setRunRequestError("");
   }
 
-  function loadSavedFixture(savedFixture: SavedFixture) {
-    applySavedFixture(savedFixture);
-    markFixtureUsed(savedFixture.id);
+  function loadSavedScenario(savedScenario: SavedScenario) {
+    applySavedScenario(savedScenario);
+    markScenarioUsed(savedScenario.id);
     setRunRequestError("");
   }
 
-  function deleteSavedFixture(savedFixtureId: string) {
+  function deleteCurrentScenario(savedScenarioId: string) {
     if (!window.confirm("Delete this saved scenario?")) {
       return;
     }
 
-    removeSavedFixture(savedFixtureId);
+    removeSavedScenario(savedScenarioId);
   }
 
-  function renameScenario(savedFixture: SavedFixture) {
-    const nextName = window.prompt("Rename saved scenario", savedFixture.name);
+  function renameSavedScenarioPrompt(savedScenario: SavedScenario) {
+    const nextName = window.prompt("Rename saved scenario", savedScenario.name);
 
-    if (!nextName || nextName.trim() === savedFixture.name) {
+    if (!nextName || nextName.trim() === savedScenario.name) {
       return;
     }
 
-    renameSavedFixture(savedFixture.id, nextName);
+    renameStoredScenario(savedScenario.id, nextName);
   }
 
-  async function importFixtureFile(importFile: File | null) {
+  async function importScenarioFile(importFile: File | null) {
     if (!importFile) {
       return;
     }
 
     try {
-      await importSavedFixturesFile(importFile);
+      await importSavedScenariosFile(importFile);
       setRunRequestError("");
     } catch {
-      setRunRequestError("Fixture import failed.");
+      setRunRequestError("Scenario import failed.");
     }
   }
 
@@ -170,34 +170,34 @@ export function useRunnerWorkspaceController() {
     currentBenchmarkWarmup,
     copyRunOutput,
     currentExportName,
-    currentFixtureName,
+    currentScenarioName,
     currentFunctionDir,
     currentFunctionType,
     currentInputJson,
     currentTarget,
     currentWasmFile,
-    deleteSavedFixture,
-    exportVisibleFixtures,
-    fixturesTransferFeedback,
+    deleteSavedScenario: deleteCurrentScenario,
+    exportVisibleScenarios,
+    scenariosTransferFeedback,
     formatCurrentInputJson,
-    importFixtureFile,
+    importScenarioFile,
     isOutputModalOpen,
     isRunInFlight,
     jsonValidationError,
-    loadSavedFixture,
+    loadSavedScenario,
     loadSelectedTemplate,
     outputCopyFeedback,
-    renameScenario,
+    renameSavedScenarioPrompt,
     runBenchmark,
     runFunction,
     runRequestError,
     runResponse,
-    saveCurrentFixture,
+    saveCurrentScenario,
     selectedTemplateId,
     setCurrentBenchmarkIterations,
     setCurrentBenchmarkWarmup,
     setCurrentExportName,
-    setCurrentFixtureName,
+    setCurrentScenarioName,
     setCurrentFunctionDir,
     setCurrentInputJson,
     setCurrentTarget,
@@ -206,6 +206,6 @@ export function useRunnerWorkspaceController() {
     setSelectedTemplateId,
     updateFunctionType,
     updateRunnerMode,
-    visibleSavedFixtures,
+    visibleSavedScenarios,
   };
 }

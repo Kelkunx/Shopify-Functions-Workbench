@@ -18,6 +18,8 @@ export interface SavedFixture {
   updatedAt: string;
 }
 
+export type SavedScenario = SavedFixture;
+
 interface SavedFixturesExportPayload {
   exportedAt: string;
   fixtures: SavedFixture[];

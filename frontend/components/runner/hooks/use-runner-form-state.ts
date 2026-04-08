@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { getTemplatesForType, type FunctionType } from "@/lib/function-templates";
-import { type SavedFixture, type RunnerMode } from "@/lib/saved-fixtures";
+import { type RunnerMode, type SavedScenario } from "@/lib/saved-fixtures";
 import {
   getJsonValidationError,
   initialFunctionInputJson,
@@ -26,7 +26,7 @@ export function useRunnerFormState() {
   const [currentFunctionDir, setCurrentFunctionDir] = useState("");
   const [currentTarget, setCurrentTarget] = useState("");
   const [currentExportName, setCurrentExportName] = useState("run");
-  const [currentFixtureName, setCurrentFixtureName] = useState("");
+  const [currentScenarioName, setCurrentScenarioName] = useState("");
 
   const availableTemplates = useMemo(
     () => getTemplatesForType(currentFunctionType),
@@ -45,7 +45,7 @@ export function useRunnerFormState() {
 
   function updateRunnerMode(nextRunnerMode: RunnerMode) {
     setActiveRunnerMode(nextRunnerMode);
-    setCurrentFixtureName("");
+    setCurrentScenarioName("");
   }
 
   function updateFunctionType(nextFunctionType: FunctionType) {
@@ -54,19 +54,19 @@ export function useRunnerFormState() {
     setSelectedTemplateId(nextAvailableTemplates[0]?.id ?? "");
   }
 
-  function applySavedFixture(savedFixture: SavedFixture) {
-    setActiveRunnerMode(savedFixture.runnerMode);
-    setCurrentBenchmarkIterations(savedFixture.benchmarkIterations);
-    setCurrentBenchmarkWarmup(savedFixture.benchmarkWarmup);
-    setCurrentFunctionType(savedFixture.functionType);
+  function applySavedScenario(savedScenario: SavedScenario) {
+    setActiveRunnerMode(savedScenario.runnerMode);
+    setCurrentBenchmarkIterations(savedScenario.benchmarkIterations);
+    setCurrentBenchmarkWarmup(savedScenario.benchmarkWarmup);
+    setCurrentFunctionType(savedScenario.functionType);
     setSelectedTemplateId(
-      getTemplatesForType(savedFixture.functionType)[0]?.id ?? "",
+      getTemplatesForType(savedScenario.functionType)[0]?.id ?? "",
     );
-    setCurrentInputJson(savedFixture.inputJson);
-    setCurrentFunctionDir(savedFixture.functionDir);
-    setCurrentTarget(savedFixture.target);
-    setCurrentExportName(savedFixture.exportName);
-    setCurrentFixtureName(savedFixture.name);
+    setCurrentInputJson(savedScenario.inputJson);
+    setCurrentFunctionDir(savedScenario.functionDir);
+    setCurrentTarget(savedScenario.target);
+    setCurrentExportName(savedScenario.exportName);
+    setCurrentScenarioName(savedScenario.name);
     setCurrentWasmFile(null);
   }
 
@@ -77,7 +77,7 @@ export function useRunnerFormState() {
     currentBenchmarkIterations,
     currentBenchmarkWarmup,
     currentExportName,
-    currentFixtureName,
+    currentScenarioName,
     currentFunctionDir,
     currentFunctionType,
     currentInputJson,
@@ -88,13 +88,13 @@ export function useRunnerFormState() {
     setCurrentBenchmarkIterations,
     setCurrentBenchmarkWarmup,
     setCurrentExportName,
-    setCurrentFixtureName,
+    setCurrentScenarioName,
     setCurrentFunctionDir,
     setCurrentInputJson,
     setCurrentTarget,
     setCurrentWasmFile,
     setSelectedTemplateId,
-    applySavedFixture,
+    applySavedScenario,
     updateFunctionType,
     updateRunnerMode,
   };

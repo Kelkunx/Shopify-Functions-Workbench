@@ -1,11 +1,12 @@
 import { type ReactNode, useId, useRef, useState } from "react";
 import { functionTypes, type FunctionType } from "@/lib/function-templates";
-import type { RunnerMode, SavedFixture } from "@/lib/saved-fixtures";
+import type { RunnerMode, SavedScenario } from "@/lib/saved-fixtures";
+import type { RunResponse } from "../runner-workspace.types";
 import { formatTimestamp } from "../runner-workspace.helpers";
 import {
   EmptyState,
   Field,
-  FixtureActionButton,
+  FixtureActionButton as ScenarioActionButton,
   InlineNote,
   SecondaryButton,
   SelectInput,
@@ -21,73 +22,64 @@ export function RunnerControlsPanel({
   currentBenchmarkIterations,
   currentBenchmarkWarmup,
   currentExportName,
-  currentFixtureName,
+  currentScenarioName,
   currentFunctionDir,
   currentFunctionType,
   lastRunResponse,
-  onDeleteSavedFixture,
+  onDeleteSavedScenario,
   onExportNameChange,
-  onExportFixtures,
-  onFixtureNameChange,
-  onFixtureSave,
+  onExportScenarios,
+  onScenarioNameChange,
+  onScenarioSave,
   onFunctionDirChange,
-  onImportFixtures,
+  onImportScenarios,
   onBenchmarkIterationsChange,
   onBenchmarkWarmupChange,
   onFunctionTypeChange,
-  onLoadFixture,
+  onLoadScenario,
   onLoadSelectedTemplate,
-  onRenameScenario,
+  onRenameSavedScenario,
   onSelectedTemplateChange,
   onTargetChange,
   onWasmFileChange,
   runnerMode,
-  savedFixtures,
+  savedScenarios,
   selectedTemplateId,
   target,
   templates,
-  transferFeedback,
+  scenarioTransferFeedback,
   wasmFile,
 }: {
   className?: string;
   currentBenchmarkIterations: number;
   currentBenchmarkWarmup: number;
   currentExportName: string;
-  currentFixtureName: string;
+  currentScenarioName: string;
   currentFunctionDir: string;
   currentFunctionType: FunctionType;
-  lastRunResponse: {
-    diagnostics: {
-      actualRunnerMode: RunnerMode;
-      shopify?: {
-        target: string;
-        targetResolved: boolean;
-        wasmOverrideActive: boolean;
-      };
-    };
-  } | null;
-  onDeleteSavedFixture: (savedFixtureId: string) => void;
+  lastRunResponse: RunResponse | null;
+  onDeleteSavedScenario: (savedScenarioId: string) => void;
   onExportNameChange: (value: string) => void;
-  onExportFixtures: () => void;
-  onFixtureNameChange: (value: string) => void;
-  onFixtureSave: () => void;
+  onExportScenarios: () => void;
+  onScenarioNameChange: (value: string) => void;
+  onScenarioSave: () => void;
   onFunctionDirChange: (value: string) => void;
-  onImportFixtures: (file: File | null) => void;
+  onImportScenarios: (file: File | null) => void;
   onBenchmarkIterationsChange: (value: number) => void;
   onBenchmarkWarmupChange: (value: number) => void;
   onFunctionTypeChange: (value: FunctionType) => void;
-  onLoadFixture: (savedFixture: SavedFixture) => void;
+  onLoadScenario: (savedScenario: SavedScenario) => void;
   onLoadSelectedTemplate: () => void;
-  onRenameScenario: (savedFixture: SavedFixture) => void;
+  onRenameSavedScenario: (savedScenario: SavedScenario) => void;
   onSelectedTemplateChange: (value: string) => void;
   onTargetChange: (value: string) => void;
   onWasmFileChange: (file: File | null) => void;
   runnerMode: RunnerMode;
-  savedFixtures: SavedFixture[];
+  savedScenarios: SavedScenario[];
   selectedTemplateId: string;
   target: string;
   templates: { id: string; label: string }[];
-  transferFeedback: string;
+  scenarioTransferFeedback: string;
   wasmFile: File | null;
 }) {
   const currentShopifyConfigLooksReady =
@@ -207,11 +199,11 @@ export function RunnerControlsPanel({
           </div>
 
           <Field
-          helper={
-            runnerMode === "mock"
+            helper={
+              runnerMode === "mock"
                 ? "Optional in mock mode. Only run trusted Wasm locally."
                 : "Optional in Shopify mode. Only run trusted Wasm locally."
-          }
+            }
             label="Wasm file"
           >
             <input
@@ -263,18 +255,18 @@ export function RunnerControlsPanel({
         </Field>
       </CollapsibleRailSection>
 
-      <SavedFixturesSection
-        currentScenarioName={currentFixtureName}
+      <SavedScenariosSection
+        currentScenarioName={currentScenarioName}
         defaultOpen={false}
-        onDeleteSavedFixture={onDeleteSavedFixture}
-        onExportFixtures={onExportFixtures}
-        onRenameScenario={onRenameScenario}
-        onScenarioNameChange={onFixtureNameChange}
-        onScenarioSave={onFixtureSave}
-        onImportFixtures={onImportFixtures}
-        onLoadFixture={onLoadFixture}
-        savedFixtures={savedFixtures}
-        transferFeedback={transferFeedback}
+        onDeleteSavedScenario={onDeleteSavedScenario}
+        onExportScenarios={onExportScenarios}
+        onRenameSavedScenario={onRenameSavedScenario}
+        onScenarioNameChange={onScenarioNameChange}
+        onScenarioSave={onScenarioSave}
+        onImportScenarios={onImportScenarios}
+        onLoadScenario={onLoadScenario}
+        savedScenarios={savedScenarios}
+        scenarioTransferFeedback={scenarioTransferFeedback}
       />
     </SidebarPanel>
   );
@@ -314,30 +306,30 @@ function CollapsibleRailSection({
   );
 }
 
-function SavedFixturesSection({
+function SavedScenariosSection({
   currentScenarioName,
   defaultOpen,
-  onDeleteSavedFixture,
-  onExportFixtures,
-  onRenameScenario,
+  onDeleteSavedScenario,
+  onExportScenarios,
+  onRenameSavedScenario,
   onScenarioNameChange,
   onScenarioSave,
-  onImportFixtures,
-  onLoadFixture,
-  savedFixtures,
-  transferFeedback,
+  onImportScenarios,
+  onLoadScenario,
+  savedScenarios,
+  scenarioTransferFeedback,
 }: {
   currentScenarioName: string;
   defaultOpen: boolean;
-  onDeleteSavedFixture: (savedFixtureId: string) => void;
-  onExportFixtures: () => void;
-  onRenameScenario: (savedFixture: SavedFixture) => void;
+  onDeleteSavedScenario: (savedScenarioId: string) => void;
+  onExportScenarios: () => void;
+  onRenameSavedScenario: (savedScenario: SavedScenario) => void;
   onScenarioNameChange: (value: string) => void;
   onScenarioSave: () => void;
-  onImportFixtures: (file: File | null) => void;
-  onLoadFixture: (savedFixture: SavedFixture) => void;
-  savedFixtures: SavedFixture[];
-  transferFeedback: string;
+  onImportScenarios: (file: File | null) => void;
+  onLoadScenario: (savedScenario: SavedScenario) => void;
+  savedScenarios: SavedScenario[];
+  scenarioTransferFeedback: string;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const importInputReference = useRef<HTMLInputElement | null>(null);
@@ -379,7 +371,7 @@ function SavedFixturesSection({
           </Field>
 
           <div className="flex gap-2">
-            <SecondaryButton onClick={onExportFixtures} type="button">
+            <SecondaryButton onClick={onExportScenarios} type="button">
               Export
             </SecondaryButton>
             <SecondaryButton
@@ -392,7 +384,7 @@ function SavedFixturesSection({
               accept="application/json,.json"
               className="hidden"
               onChange={(event) => {
-                onImportFixtures(event.target.files?.[0] ?? null);
+                onImportScenarios(event.target.files?.[0] ?? null);
                 event.target.value = "";
               }}
               ref={importInputReference}
@@ -400,19 +392,19 @@ function SavedFixturesSection({
             />
           </div>
 
-          {transferFeedback ? <InlineNote>{transferFeedback}</InlineNote> : null}
+          {scenarioTransferFeedback ? <InlineNote>{scenarioTransferFeedback}</InlineNote> : null}
 
           <div className="space-y-2">
-            {savedFixtures.length === 0 ? (
+            {savedScenarios.length === 0 ? (
               <EmptyState>No saved scenarios.</EmptyState>
             ) : (
-              savedFixtures.map((savedFixture) => (
-                <SavedFixtureCard
-                  key={savedFixture.id}
-                  onDelete={() => onDeleteSavedFixture(savedFixture.id)}
-                  onLoad={() => onLoadFixture(savedFixture)}
-                  onRename={() => onRenameScenario(savedFixture)}
-                  savedFixture={savedFixture}
+              savedScenarios.map((savedScenario) => (
+                <SavedScenarioCard
+                  key={savedScenario.id}
+                  onDelete={() => onDeleteSavedScenario(savedScenario.id)}
+                  onLoad={() => onLoadScenario(savedScenario)}
+                  onRename={() => onRenameSavedScenario(savedScenario)}
+                  savedScenario={savedScenario}
                 />
               ))
             )}
@@ -423,48 +415,48 @@ function SavedFixturesSection({
   );
 }
 
-function SavedFixtureCard({
+function SavedScenarioCard({
   onDelete,
   onLoad,
   onRename,
-  savedFixture,
+  savedScenario,
 }: {
   onDelete: () => void;
   onLoad: () => void;
   onRename: () => void;
-  savedFixture: SavedFixture;
+  savedScenario: SavedScenario;
 }) {
   return (
     <div className="border-b border-border pb-3 last:border-b-0 last:pb-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-medium text-foreground">
-            {savedFixture.name}
+            {savedScenario.name}
           </div>
           <div className="mt-1 text-xs text-muted">
-            {savedFixture.runnerMode} • {savedFixture.functionType} • updated{" "}
-            {formatTimestamp(savedFixture.updatedAt)}
+            {savedScenario.runnerMode} • {savedScenario.functionType} • updated{" "}
+            {formatTimestamp(savedScenario.updatedAt)}
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <FixtureActionButton onClick={onLoad} type="button">
+          <ScenarioActionButton onClick={onLoad} type="button">
             Load
-          </FixtureActionButton>
-          <FixtureActionButton onClick={onRename} type="button">
+          </ScenarioActionButton>
+          <ScenarioActionButton onClick={onRename} type="button">
             Rename
-          </FixtureActionButton>
-          <FixtureActionButton onClick={onDelete} tone="danger" type="button">
+          </ScenarioActionButton>
+          <ScenarioActionButton onClick={onDelete} tone="danger" type="button">
             Delete
-          </FixtureActionButton>
+          </ScenarioActionButton>
         </div>
       </div>
-      {savedFixture.lastUsedAt ? (
+      {savedScenario.lastUsedAt ? (
         <div className="mt-2 text-xs text-muted">
-          Last used {formatTimestamp(savedFixture.lastUsedAt)}
+          Last used {formatTimestamp(savedScenario.lastUsedAt)}
         </div>
       ) : null}
-      {savedFixture.runnerMode === "shopify" && savedFixture.target ? (
-        <div className="mt-2 truncate text-xs text-muted">{savedFixture.target}</div>
+      {savedScenario.runnerMode === "shopify" && savedScenario.target ? (
+        <div className="mt-2 truncate text-xs text-muted">{savedScenario.target}</div>
       ) : null}
     </div>
   );

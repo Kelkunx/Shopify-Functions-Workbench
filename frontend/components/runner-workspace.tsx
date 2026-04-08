@@ -17,34 +17,34 @@ export function RunnerWorkspace() {
     currentBenchmarkWarmup,
     copyRunOutput,
     currentExportName,
-    currentFixtureName,
+    currentScenarioName,
     currentFunctionDir,
     currentFunctionType,
     currentInputJson,
     currentTarget,
     currentWasmFile,
-    deleteSavedFixture,
-    exportVisibleFixtures,
-    fixturesTransferFeedback,
+    deleteSavedScenario,
+    exportVisibleScenarios,
+    scenariosTransferFeedback,
     formatCurrentInputJson,
-    importFixtureFile,
+    importScenarioFile,
     isOutputModalOpen,
     isRunInFlight,
     jsonValidationError,
-    loadSavedFixture,
+    loadSavedScenario,
     loadSelectedTemplate,
     outputCopyFeedback,
-    renameScenario,
+    renameSavedScenarioPrompt,
     runBenchmark,
     runFunction,
     runRequestError,
     runResponse,
-    saveCurrentFixture,
+    saveCurrentScenario,
     selectedTemplateId,
     setCurrentBenchmarkIterations,
     setCurrentBenchmarkWarmup,
     setCurrentExportName,
-    setCurrentFixtureName,
+    setCurrentScenarioName,
     setCurrentFunctionDir,
     setCurrentInputJson,
     setCurrentTarget,
@@ -53,7 +53,7 @@ export function RunnerWorkspace() {
     setSelectedTemplateId,
     updateFunctionType,
     updateRunnerMode,
-    visibleSavedFixtures,
+    visibleSavedScenarios,
   } = useRunnerWorkspaceController();
   const desktopGridColumns = useMemo(
     () => "xl:grid-cols-[332px_minmax(0,1fr)_384px] 2xl:grid-cols-[348px_minmax(0,1fr)_408px]",
@@ -89,32 +89,32 @@ export function RunnerWorkspace() {
                 currentBenchmarkIterations={currentBenchmarkIterations}
                 currentBenchmarkWarmup={currentBenchmarkWarmup}
                 currentExportName={currentExportName}
-                currentFixtureName={currentFixtureName}
+                currentScenarioName={currentScenarioName}
                 currentFunctionDir={currentFunctionDir}
                 currentFunctionType={currentFunctionType}
                 lastRunResponse={runResponse}
                 onBenchmarkIterationsChange={setCurrentBenchmarkIterations}
                 onBenchmarkWarmupChange={setCurrentBenchmarkWarmup}
-                onDeleteSavedFixture={deleteSavedFixture}
+                onDeleteSavedScenario={deleteSavedScenario}
                 onExportNameChange={setCurrentExportName}
-                onExportFixtures={exportVisibleFixtures}
-                onFixtureNameChange={setCurrentFixtureName}
-                onFixtureSave={saveCurrentFixture}
+                onExportScenarios={exportVisibleScenarios}
+                onScenarioNameChange={setCurrentScenarioName}
+                onScenarioSave={saveCurrentScenario}
                 onFunctionDirChange={setCurrentFunctionDir}
-                onImportFixtures={importFixtureFile}
+                onImportScenarios={importScenarioFile}
                 onFunctionTypeChange={updateFunctionType}
-                onLoadFixture={loadSavedFixture}
+                onLoadScenario={loadSavedScenario}
                 onLoadSelectedTemplate={loadSelectedTemplate}
-                onRenameScenario={renameScenario}
+                onRenameSavedScenario={renameSavedScenarioPrompt}
                 onSelectedTemplateChange={setSelectedTemplateId}
                 onTargetChange={setCurrentTarget}
                 onWasmFileChange={setCurrentWasmFile}
                 runnerMode={activeRunnerMode}
-                savedFixtures={visibleSavedFixtures}
+                savedScenarios={visibleSavedScenarios}
                 selectedTemplateId={selectedTemplateId}
                 target={currentTarget}
                 templates={availableTemplates}
-                transferFeedback={fixturesTransferFeedback}
+                scenarioTransferFeedback={scenariosTransferFeedback}
                 wasmFile={currentWasmFile}
               />
             </div>

@@ -4,10 +4,9 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-interface FixtureData {
+interface RunnerInvocation {
   export: string;
   input: Record<string, unknown>;
-  expectedOutput: Record<string, unknown>;
   target: string;
 }
 
@@ -66,7 +65,7 @@ export class ShopifyFunctionRunnerService {
   }
 
   async runFunction(
-    fixture: FixtureData,
+    invocation: RunnerInvocation,
     functionRunnerPath: string,
     wasmPath: string,
     queryPath: string,
@@ -82,7 +81,7 @@ export class ShopifyFunctionRunnerService {
             '-f',
             wasmPath,
             '--export',
-            fixture.export,
+            invocation.export,
             '--query-path',
             queryPath,
             '--schema-path',
@@ -152,7 +151,7 @@ export class ShopifyFunctionRunnerService {
           }
         });
 
-        runnerProcess.stdin.write(JSON.stringify(fixture.input));
+        runnerProcess.stdin.write(JSON.stringify(invocation.input));
         runnerProcess.stdin.end();
       });
     });

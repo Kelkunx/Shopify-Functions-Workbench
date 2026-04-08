@@ -177,9 +177,6 @@ export function RunResultsPanel({
         description="Latest runner output."
         title="Output"
       >
-        <InlineNote>
-          {runResponse ? "Ready to inspect." : "Run to inspect output."}
-        </InlineNote>
         {copyFeedback ? <InlineNote>{copyFeedback}</InlineNote> : null}
         <CodeBlock className="max-h-72">
           {runResponse ? formatOutputJson(runResponse.output) : "{\n  \n}"}

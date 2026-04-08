@@ -35,19 +35,28 @@ export function RunResultsPanel({
   const benchmarkResult = runResponse?.benchmark;
   const hasRunResponse = Boolean(runResponse);
   const isSuccessfulRun = runResponse?.success === true;
+  const lastBenchmarkRun = benchmarkResult?.runs.at(-1) ?? null;
   const currentStatusLabel = hasRunResponse
     ? isSuccessfulRun
       ? "Success"
       : "Failed"
     : "Idle";
   const currentStatusDescription = hasRunResponse
-    ? isSuccessfulRun
-      ? "The last run completed and returned a structured response."
-      : "The last run finished with runner errors."
+    ? benchmarkResult
+      ? isSuccessfulRun
+        ? "Benchmark completed. This panel shows the final run result."
+        : "Benchmark stopped on the final run because of runner errors."
+      : isSuccessfulRun
+        ? "The last run completed and returned a structured response."
+        : "The last run finished with runner errors."
     : "Configure the runner, then use Run or Benchmark to execute it.";
-  const currentExecutionTime = runResponse
-    ? `${runResponse.executionTimeMs.toFixed(3)} ms`
+  const currentExecutionTimeValue = lastBenchmarkRun?.executionTimeMs ?? runResponse?.executionTimeMs;
+  const currentExecutionTime = hasRunResponse
+    ? `${currentExecutionTimeValue?.toFixed(3)} ms`
     : "Not run";
+  const currentExecutionTimeLabel = benchmarkResult
+    ? "Last run time"
+    : "Execution time";
 
   return (
     <SidebarPanel>
@@ -64,7 +73,7 @@ export function RunResultsPanel({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-muted">Execution time</div>
+              <div className="text-xs text-muted">{currentExecutionTimeLabel}</div>
               <div className="mt-1 text-lg font-semibold text-foreground">
                 {currentExecutionTime}
               </div>

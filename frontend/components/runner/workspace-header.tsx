@@ -26,20 +26,19 @@ export function WorkspaceHeader({
 }) {
   return (
     <header className="border-b border-border bg-surface-strong">
-      <div className="flex min-h-14 items-center justify-between gap-4 px-5 lg:px-8">
-        <div className="flex min-w-0 items-center gap-4">
+      <div className="flex min-h-16 items-center justify-between gap-4 px-5 lg:px-8">
+        <div className="flex min-w-0 items-center gap-5">
           <div className="min-w-0">
             <h1 className="text-[15px] font-semibold">Shopify Functions Workbench</h1>
-            <p className="text-sm text-muted">
-              Open-source workbench for local Shopify Function runs, fixtures, and
-              debugging.
+            <p className="mt-0.5 text-sm text-muted">
+              Local Shopify Function runs, scenarios, and benchmark checks.
             </p>
           </div>
-          <div className="hidden h-6 w-px bg-border lg:block" />
+          <div className="hidden h-8 w-px bg-border lg:block" />
           <div className="hidden items-center gap-2 lg:flex">
             <ModeButton
               active={runnerMode === "mock"}
-              label="Mock assistive"
+              label="Mock"
               onClick={() => onRunnerModeChange("mock")}
             />
             <ModeButton
@@ -76,7 +75,7 @@ export function WorkspaceHeader({
       <div className="flex items-center gap-2 border-t border-border px-5 py-2 text-sm lg:hidden">
         <ModeButton
           active={runnerMode === "mock"}
-          label="Mock assistive"
+          label="Mock"
           onClick={() => onRunnerModeChange("mock")}
         />
         <ModeButton

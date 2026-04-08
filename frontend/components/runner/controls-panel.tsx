@@ -6,7 +6,7 @@ import {
   EmptyState,
   Field,
   FixtureActionButton,
-  StateBadge,
+  InlineNote,
   SecondaryButton,
   SelectInput,
   SidebarPanel,
@@ -99,7 +99,24 @@ export function RunnerControlsPanel({
 
   return (
     <SidebarPanel>
-      <SidebarSection title="Runner">
+      <SidebarSection
+        description="Configure the next run here. Required Shopify fields are grouped together so the path to execution stays obvious."
+        title="1. Run setup"
+      >
+        {runnerMode === "shopify" ? (
+          currentShopifyConfigLooksReady ? (
+            <InlineNote>Shopify mode is active. The next run will use your local function directory.</InlineNote>
+          ) : (
+            <InlineNote tone="danger">
+              Shopify mode is active. Fill both <code>functionDir</code> and <code>target</code> before running.
+            </InlineNote>
+          )
+        ) : (
+          <InlineNote>
+            Mock mode is available for quick payload and output checks before a real Shopify run.
+          </InlineNote>
+        )}
+
         <Field label="Function type">
           <SelectInput
             onChange={(event) => onFunctionTypeChange(event.target.value as FunctionType)}
@@ -132,81 +149,94 @@ export function RunnerControlsPanel({
           </div>
         </Field>
 
-        <Field
-          helper={
-            runnerMode === "mock"
-              ? "Optional in assistive mock mode. The backend can run without a real file. Only run trusted Wasm locally."
-              : "Optional override when you want to run a local Shopify function with a different build output. Only run trusted Wasm locally."
-          }
-          label="Wasm file"
-        >
-          <input
-            accept=".wasm"
-            className={`${runnerUiClassNames.textInput} block py-2 file:mr-3 file:rounded-md file:border-0 file:bg-stone-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white`}
-            onChange={(event) => onWasmFileChange(event.target.files?.[0] ?? null)}
-            type="file"
-          />
-          <div className="mt-2 text-sm text-muted">
-            {wasmFile ? wasmFile.name : "No file selected"}
+        {runnerMode === "shopify" ? (
+          <div className="space-y-4 border-t border-border pt-4">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Required for Shopify runs</h3>
+              <p className="mt-1 text-sm leading-5 text-muted">
+                These fields point the workbench to the local Shopify Function you want to execute.
+              </p>
+            </div>
+
+            <Field
+              helper="Local function directory. This is the main path used for real local validation."
+              label="functionDir (required)"
+            >
+              <TextInput
+                onChange={(event) => onFunctionDirChange(event.target.value)}
+                placeholder="/path/to/extensions/discount"
+                type="text"
+                value={currentFunctionDir}
+              />
+            </Field>
+
+            <Field
+              helper="Exact Shopify target, for example `cart.lines.discounts.generate.run`."
+              label="target (required)"
+            >
+              <TextInput
+                onChange={(event) => onTargetChange(event.target.value)}
+                placeholder="cart.lines.discounts.generate.run"
+                type="text"
+                value={target}
+              />
+            </Field>
+
+            <Field helper="Optional. Defaults to `run`." label="exportName">
+              <TextInput
+                onChange={(event) => onExportNameChange(event.target.value)}
+                placeholder="run"
+                type="text"
+                value={currentExportName}
+              />
+            </Field>
+
+            {currentTargetResolved ? (
+              <InlineNote>Target resolved on the last successful Shopify run.</InlineNote>
+            ) : null}
           </div>
-        </Field>
+        ) : null}
+
+        <div className="space-y-4 border-t border-border pt-4">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Optional Wasm override</h3>
+            <p className="mt-1 text-sm leading-5 text-muted">
+              Use this only when you want to run a specific local Wasm build instead of the default output.
+            </p>
+          </div>
+
+          <Field
+            helper={
+              runnerMode === "mock"
+                ? "Optional in mock mode. The backend can run without a real file. Only run trusted Wasm locally."
+                : "Optional override for Shopify mode. Only run trusted Wasm locally."
+            }
+            label="Wasm file"
+          >
+            <input
+              accept=".wasm"
+              className={`${runnerUiClassNames.textInput} block py-2 file:mr-3 file:rounded-md file:border-0 file:bg-stone-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white`}
+              onChange={(event) => onWasmFileChange(event.target.files?.[0] ?? null)}
+              type="file"
+            />
+            <div className="mt-2 text-sm text-muted">
+              {wasmFile ? wasmFile.name : "No file selected"}
+            </div>
+          </Field>
+
+          {wasmFile ? (
+            <InlineNote>
+              Wasm override selected. This run will ignore the built Shopify Wasm in the
+              function directory.
+            </InlineNote>
+          ) : null}
+        </div>
       </SidebarSection>
 
-      {runnerMode === "shopify" ? (
-        <SidebarSection title="Shopify runner">
-          <StateBadge tone={currentShopifyConfigLooksReady ? "neutral" : "danger"}>
-            {currentShopifyConfigLooksReady
-              ? "Shopify runner fields are present."
-              : "functionDir and target are required for real Shopify runs."}
-          </StateBadge>
-
-          <Field
-            helper="Local function directory. This is the primary path for serious local validation."
-            label="functionDir"
-          >
-            <TextInput
-              onChange={(event) => onFunctionDirChange(event.target.value)}
-              placeholder="/path/to/extensions/discount"
-              type="text"
-              value={currentFunctionDir}
-            />
-          </Field>
-
-          <Field
-            helper="Exact Shopify target, for example `cart.lines.discounts.generate.run`."
-            label="target"
-          >
-            <TextInput
-              onChange={(event) => onTargetChange(event.target.value)}
-              placeholder="cart.lines.discounts.generate.run"
-              type="text"
-              value={target}
-            />
-          </Field>
-
-          <Field helper="Defaults to `run`." label="exportName">
-            <TextInput
-              onChange={(event) => onExportNameChange(event.target.value)}
-              placeholder="run"
-              type="text"
-              value={currentExportName}
-            />
-          </Field>
-
-          <div className="space-y-2">
-            {currentTargetResolved ? (
-              <StateBadge tone="neutral">Target resolved on the last successful run.</StateBadge>
-            ) : null}
-            {wasmFile ? (
-              <StateBadge tone="neutral">
-                Wasm override selected. This run will not use the built Shopify Wasm.
-              </StateBadge>
-            ) : null}
-          </div>
-        </SidebarSection>
-      ) : null}
-
-      <SidebarSection title="Benchmark">
+      <SidebarSection
+        description="Secondary tool. Use this when you want repeated local measurements rather than a single execution."
+        title="2. Benchmark"
+      >
         <Field
           helper="Warm-up runs are excluded from the averages. Use this to compare local runner performance without the browser."
           label="Iterations"
@@ -274,9 +304,12 @@ function SavedFixturesSection({
   const importInputReference = useRef<HTMLInputElement | null>(null);
 
   return (
-    <SidebarSection title="Saved scenarios">
+    <SidebarSection
+      description="Secondary tool. Keep reusable local scenarios here so you can reload them quickly later."
+      title="Saved scenarios"
+    >
       <Field
-        helper="Reusable local scenarios for the current runner mode. Save will overwrite by name inside the same mode."
+        helper="Save will overwrite by name inside the same mode."
         label="Scenario name"
       >
         <div className="flex gap-2">
@@ -315,9 +348,7 @@ function SavedFixturesSection({
         />
       </div>
 
-      {transferFeedback ? (
-        <StateBadge tone="neutral">{transferFeedback}</StateBadge>
-      ) : null}
+      {transferFeedback ? <InlineNote>{transferFeedback}</InlineNote> : null}
 
       <div className="space-y-2">
         {savedFixtures.length === 0 ? (
@@ -350,7 +381,7 @@ function SavedFixtureCard({
   savedFixture: SavedFixture;
 }) {
   return (
-    <div className="rounded-md border border-border bg-surface px-3 py-3">
+    <div className="border-b border-border pb-3 last:border-b-0 last:pb-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-medium text-foreground">

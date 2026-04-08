@@ -69,8 +69,8 @@ export function RunnerWorkspace() {
           runnerMode={activeRunnerMode}
         />
 
-        <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:px-8 lg:py-6">
-          <div className="grid min-h-0 flex-1 gap-5 xl:grid-cols-[272px_minmax(0,1fr)_360px]">
+        <main className="flex min-h-0 flex-1 flex-col px-5 py-5 lg:px-6 lg:py-6">
+          <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[292px_minmax(0,1fr)_348px]">
             <RunnerControlsPanel
               currentBenchmarkIterations={currentBenchmarkIterations}
               currentBenchmarkWarmup={currentBenchmarkWarmup}

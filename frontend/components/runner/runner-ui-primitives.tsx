@@ -31,14 +31,21 @@ export function PanelHeader({
 
 export function SidebarSection({
   children,
+  description,
   title,
 }: {
   children: ReactNode;
+  description?: string;
   title: string;
 }) {
   return (
     <section className={runnerUiClassNames.sectionWrapper}>
-      <h2 className="mb-3 text-sm font-semibold">{title}</h2>
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {description ? (
+          <p className="mt-1 text-sm leading-5 text-muted">{description}</p>
+        ) : null}
+      </div>
       <div className="space-y-4">{children}</div>
     </section>
   );
@@ -136,9 +143,9 @@ export function DangerBox({ children }: { children: ReactNode }) {
 
 export function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border bg-surface px-3 py-3">
+    <div className="border-b border-border py-2 last:border-b-0">
       <div className="text-xs text-muted">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-sm font-medium text-foreground">{value}</div>
     </div>
   );
 }
@@ -184,6 +191,19 @@ export function StateBadge({
       {children}
     </span>
   );
+}
+
+export function InlineNote({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "danger" | "neutral";
+}) {
+  const toneClassName =
+    tone === "danger" ? "text-danger" : "text-muted";
+
+  return <p className={`text-sm leading-5 ${toneClassName}`}>{children}</p>;
 }
 
 export function CodeBlock({

@@ -51,7 +51,7 @@ npm run test:e2e
 ## Examples and scenarios
 
 - Browser-saved scenarios are for local iteration and should not be committed as source-controlled truth by default.
-- Use `examples/shopify-product-discount/` as the official real-runner validation path.
+- Use the official examples in `examples/` as the real-runner validation path before relying on personal sandboxes.
 - Do not commit ad hoc local sandboxes or personal Shopify app workspaces.
 
 ## Pull request expectations

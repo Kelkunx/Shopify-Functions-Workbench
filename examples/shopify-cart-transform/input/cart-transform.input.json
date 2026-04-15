@@ -1,0 +1,38 @@
+{
+  "cart": {
+    "lines": [
+      {
+        "id": "gid://shopify/CartLine/1",
+        "cost": {
+          "amountPerQuantity": {
+            "amount": "8.50",
+            "currencyCode": "EUR"
+          }
+        },
+        "fabricLength": {
+          "value": "2"
+        },
+        "merchandise": {
+          "__typename": "ProductVariant",
+          "id": "gid://shopify/ProductVariant/1",
+          "title": "Cotton roll"
+        }
+      },
+      {
+        "id": "gid://shopify/CartLine/2",
+        "cost": {
+          "amountPerQuantity": {
+            "amount": "5.00",
+            "currencyCode": "EUR"
+          }
+        },
+        "fabricLength": null,
+        "merchandise": {
+          "__typename": "ProductVariant",
+          "id": "gid://shopify/ProductVariant/2",
+          "title": "Standard item"
+        }
+      }
+    ]
+  }
+}

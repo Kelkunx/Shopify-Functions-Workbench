@@ -8,6 +8,7 @@ import {
   serializeSavedScenariosExport,
   type RunnerMode,
   type SavedScenario,
+  type ScenarioBenchmarkSummary,
 } from "@/lib/saved-scenarios";
 
 export function useSavedScenariosStore(activeRunnerMode: RunnerMode) {
@@ -66,7 +67,23 @@ export function useSavedScenariosStore(activeRunnerMode: RunnerMode) {
       return;
     }
 
+    let nameAlreadyUsed = false;
+
     setAllSavedScenarios((currentSavedScenarios) => {
+      const renamedScenario = currentSavedScenarios.find(
+        (savedScenario) => savedScenario.id === savedScenarioId,
+      );
+      nameAlreadyUsed = currentSavedScenarios.some(
+        (savedScenario) =>
+          savedScenario.id !== savedScenarioId &&
+          savedScenario.runnerMode === renamedScenario?.runnerMode &&
+          savedScenario.name.toLowerCase() === trimmedName.toLowerCase(),
+      );
+
+      if (nameAlreadyUsed) {
+        return currentSavedScenarios;
+      }
+
       const nextSavedScenarios = currentSavedScenarios.map((savedScenario) =>
         savedScenario.id === savedScenarioId
           ? {
@@ -82,7 +99,38 @@ export function useSavedScenariosStore(activeRunnerMode: RunnerMode) {
       return nextSavedScenarios;
     });
 
-    setScenariosTransferFeedback("Scenario renamed.");
+    setScenariosTransferFeedback(
+      nameAlreadyUsed
+        ? "Scenario name already exists for this mode."
+        : "Scenario renamed.",
+    );
+  }
+
+  function recordScenarioBenchmark(
+    savedScenarioId: string,
+    benchmarkSummary: ScenarioBenchmarkSummary,
+  ) {
+    setAllSavedScenarios((currentSavedScenarios) => {
+      const nextSavedScenarios = currentSavedScenarios.map((savedScenario) =>
+        savedScenario.id === savedScenarioId
+          ? {
+              ...savedScenario,
+              recentBenchmarks: [
+                benchmarkSummary,
+                ...(savedScenario.recentBenchmarks ?? []).filter(
+                  (savedBenchmark) =>
+                    savedBenchmark.recordedAt !== benchmarkSummary.recordedAt,
+                ),
+              ].slice(0, 3),
+              updatedAt: new Date().toISOString(),
+            }
+          : savedScenario,
+      );
+
+      persistSavedScenarios(nextSavedScenarios);
+
+      return nextSavedScenarios;
+    });
   }
 
   function markScenarioUsed(savedScenarioId: string) {
@@ -179,6 +227,7 @@ export function useSavedScenariosStore(activeRunnerMode: RunnerMode) {
     exportVisibleScenarios,
     importSavedScenariosFile,
     markScenarioUsed,
+    recordScenarioBenchmark,
     renameSavedScenario,
     scenariosTransferFeedback,
     upsertSavedScenario,

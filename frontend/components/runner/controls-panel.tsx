@@ -353,7 +353,7 @@ function SavedScenariosSection({
       {isOpen ? (
         <div id={contentId} className="space-y-4">
           <Field
-            helper="Save overwrites by name in the same mode."
+            helper="Save creates a scenario or updates the matching name."
             label="Scenario name"
           >
             <div className="flex gap-2">
@@ -453,6 +453,12 @@ function SavedScenarioCard({
       {savedScenario.lastUsedAt ? (
         <div className="mt-2 text-xs text-muted">
           Last used {formatTimestamp(savedScenario.lastUsedAt)}
+        </div>
+      ) : null}
+      {savedScenario.recentBenchmarks?.[0] ? (
+        <div className="mt-2 text-xs text-muted">
+          Last benchmark {savedScenario.recentBenchmarks[0].averageTotalMs.toFixed(3)} ms avg ·{" "}
+          {savedScenario.recentBenchmarks[0].measuredRuns} measured
         </div>
       ) : null}
       {savedScenario.runnerMode === "shopify" && savedScenario.target ? (

@@ -44,7 +44,7 @@ If you need to override it, create a local `.env` file from `./.env.example`.
 
 ## First Real Shopify Run
 
-Use the official example package in `examples/shopify-product-discount/`.
+Use one of the official example packages in `examples/`.
 
 In the UI:
 
@@ -53,6 +53,11 @@ In the UI:
 - `target`: `cart.lines.discounts.generate.run`
 - `exportName`: `run`
 - `inputJson`: paste `examples/shopify-product-discount/input/product-discount.input.json`
+
+You can also validate the real runner with:
+
+- `examples/shopify-delivery-customization/extensions/workbench-delivery-customization`
+- `examples/shopify-cart-transform/extensions/workbench-cart-transform`
 
 Expected result:
 
@@ -98,7 +103,7 @@ Current limitation:
 - mock mode still exists for DX and payload iteration
 - real Shopify execution requires a local function directory and target metadata
 - local timings are useful for comparison, not as Shopify production guarantees
-- the repo currently ships one official example only; broader example coverage is still to come
+- the official examples cover product discount, delivery customization, and cart transform
 
 ## Tech Stack
 
@@ -111,7 +116,9 @@ Current limitation:
 ```text
 Shopify-Functions-Workbench/
 ├── examples/
-│   └── shopify-product-discount/
+│   ├── shopify-product-discount/
+│   ├── shopify-delivery-customization/
+│   └── shopify-cart-transform/
 ├── backend/
 │   ├── src/
 │   └── test/
@@ -203,7 +210,7 @@ Used when `functionDir` and `target` are provided.
 - `Unknown target ...`:
   the target does not exist in `shopify.extension.toml`.
 - `failed to find function export`:
-  the target export and the selected function build do not match.
+  the target export and the selected function build do not match; check `exportName` and `shopify.extension.toml`.
 - `functionDir does not exist`:
   the path is wrong or points to a deleted local directory.
 - `Wasm build was not found`:
@@ -215,8 +222,9 @@ Used when `functionDir` and `target` are provided.
 
 - the UI can save named local scenarios to browser local storage
 - a scenario stores runner mode, function type, JSON input, Shopify runner fields, and benchmark defaults
-- saving reuses the same scenario name per mode as an overwrite path
+- saving prompts before overwriting a scenario with the same name in the same mode
 - scenarios can be renamed, deleted, exported as JSON, and imported on another machine or browser
+- the latest benchmark summary can be attached to a saved scenario for quick local comparison
 - legacy scenario storage from the old project name is migrated automatically in the browser
 - scenarios are intended for fast local iteration, not source-controlled test cases
 
@@ -227,10 +235,12 @@ Used when `functionDir` and `target` are provided.
 - output actions are available directly inside the output frame
 - detailed timings, benchmark breakdown, and Shopify diagnostics live behind the result drawer instead of the main inspector
 
-## Official Example
+## Official Examples
 
-- `examples/shopify-product-discount/README.md` is the recommended validation path for the real Shopify runner mode
-- the example includes a prebuilt `dist/function.wasm`, the source files, and a ready-to-run input payload
+- `examples/shopify-product-discount/README.md`: `cart.lines.discounts.generate.run`
+- `examples/shopify-delivery-customization/README.md`: `purchase.delivery-customization.run`
+- `examples/shopify-cart-transform/README.md`: `purchase.cart-transform.run`
+- every example includes a prebuilt `dist/function.wasm`, source files, and a ready-to-run input payload
 
 ## Development Commands
 
@@ -288,7 +298,8 @@ npm test
 - Shopify mode still depends on local Shopify CLI metadata and a buildable local function directory
 - local benchmark numbers include machine, OS, and runner overhead
 - the workbench does not sandbox untrusted Wasm
-- the example package validates the workbench path, but it is not a full Shopify app template
+- the bundled examples validate the workbench path, but they are not full production Shopify app templates
+- benchmark history is intentionally lightweight and stays browser-local
 
 ## Roadmap
 
@@ -297,13 +308,6 @@ npm test
 - keep improving benchmark UX without presenting local timings as production truth
 - continue hardening docs and contributor onboarding for external devs
 - mock mode is intentionally approximate and should not be treated as a Shopify-accurate runtime
-
-## Roadmap
-
-- add per-target official Shopify templates and example scenarios
-- add a richer benchmark UX with saved benchmark presets and easier comparisons
-- add more real-function validation coverage and clearer Shopify-specific remediation messages
-- publish a clean example package and expand contributor docs
 
 ## Contributing
 

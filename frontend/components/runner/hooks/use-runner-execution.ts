@@ -16,6 +16,7 @@ interface UseRunnerExecutionParams {
   currentTarget: string;
   currentWasmFile: File | null;
   jsonValidationError: string;
+  onRunComplete?: (runResponse: RunResponse) => void;
   runnerMode: RunnerMode;
 }
 
@@ -29,6 +30,7 @@ export function useRunnerExecution({
   currentTarget,
   currentWasmFile,
   jsonValidationError,
+  onRunComplete,
   runnerMode,
 }: UseRunnerExecutionParams) {
   const [isRunInFlight, setIsRunInFlight] = useState(false);
@@ -91,6 +93,7 @@ export function useRunnerExecution({
       }
 
       setRunResponse(runPayload);
+      onRunComplete?.(runPayload);
     } catch (error) {
       setRunResponse(null);
       setRunRequestError(

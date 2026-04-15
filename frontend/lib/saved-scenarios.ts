@@ -2,6 +2,17 @@ import type { FunctionType } from "./function-templates";
 
 export type RunnerMode = "mock" | "shopify";
 
+export interface ScenarioBenchmarkSummary {
+  averageExecutionMs: number;
+  averageRunnerMs: number | null;
+  averageTotalMs: number;
+  maxTotalMs: number;
+  measuredRuns: number;
+  minTotalMs: number;
+  recordedAt: string;
+  warmupRuns: number;
+}
+
 export interface SavedScenario {
   benchmarkIterations: number;
   benchmarkWarmup: number;
@@ -15,6 +26,7 @@ export interface SavedScenario {
   name: string;
   runnerMode: RunnerMode;
   target: string;
+  recentBenchmarks?: ScenarioBenchmarkSummary[];
   updatedAt: string;
 }
 
@@ -172,6 +184,13 @@ function normalizeSavedScenario(rawScenario: unknown): SavedScenario | null {
         ? scenario.runnerMode
         : "mock",
     target: typeof scenario.target === "string" ? scenario.target : "",
+    recentBenchmarks: Array.isArray(scenario.recentBenchmarks)
+      ? scenario.recentBenchmarks.flatMap((rawBenchmark) => {
+          const normalizedBenchmark = normalizeScenarioBenchmark(rawBenchmark);
+
+          return normalizedBenchmark ? [normalizedBenchmark] : [];
+        })
+      : [],
     updatedAt:
       typeof scenario.updatedAt === "string" ? scenario.updatedAt : nowIso,
   };
@@ -199,6 +218,43 @@ function isSavedScenario(value: unknown): value is SavedScenario {
     (scenario.lastUsedAt === null || typeof scenario.lastUsedAt === "string") &&
     (scenario.runnerMode === "mock" || scenario.runnerMode === "shopify") &&
     typeof scenario.target === "string" &&
+    (scenario.recentBenchmarks === undefined ||
+      Array.isArray(scenario.recentBenchmarks)) &&
     typeof scenario.updatedAt === "string"
   );
+}
+
+function normalizeScenarioBenchmark(
+  rawBenchmark: unknown,
+): ScenarioBenchmarkSummary | null {
+  if (!rawBenchmark || typeof rawBenchmark !== "object") {
+    return null;
+  }
+
+  const benchmark = rawBenchmark as Partial<ScenarioBenchmarkSummary>;
+
+  if (
+    typeof benchmark.averageExecutionMs !== "number" ||
+    (benchmark.averageRunnerMs !== null &&
+      typeof benchmark.averageRunnerMs !== "number") ||
+    typeof benchmark.averageTotalMs !== "number" ||
+    typeof benchmark.maxTotalMs !== "number" ||
+    typeof benchmark.measuredRuns !== "number" ||
+    typeof benchmark.minTotalMs !== "number" ||
+    typeof benchmark.recordedAt !== "string" ||
+    typeof benchmark.warmupRuns !== "number"
+  ) {
+    return null;
+  }
+
+  return {
+    averageExecutionMs: benchmark.averageExecutionMs,
+    averageRunnerMs: benchmark.averageRunnerMs ?? null,
+    averageTotalMs: benchmark.averageTotalMs,
+    maxTotalMs: benchmark.maxTotalMs,
+    measuredRuns: benchmark.measuredRuns,
+    minTotalMs: benchmark.minTotalMs,
+    recordedAt: benchmark.recordedAt,
+    warmupRuns: benchmark.warmupRuns,
+  };
 }

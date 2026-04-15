@@ -1,0 +1,17 @@
+api_version = "2026-01"
+
+[[extensions]]
+handle = "workbench-cart-transform"
+name = "Workbench cart transform example"
+description = "Official example function for Shopify Functions Workbench"
+type = "function"
+
+  [[extensions.targeting]]
+  target = "purchase.cart-transform.run"
+  input_query = "src/run.graphql"
+  export = "run"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"
+

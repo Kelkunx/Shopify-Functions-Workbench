@@ -325,10 +325,16 @@ export class RunService {
     const queryPath = targetConfig?.inputQueryPath;
 
     if (!queryPath) {
+      const availableTargets = Object.keys(functionInfo.targeting);
+      const availableTargetsMessage =
+        availableTargets.length > 0
+          ? ` Available targets: ${availableTargets.join(', ')}.`
+          : ' No targets were found in this Shopify function metadata.';
+
       throw new RunFailure(
         'SHOPIFY_TARGET_NOT_FOUND',
         'shopify-config',
-        `Unknown target "${target}" for functionDir "${resolvedFunctionDirectory.originalPath}".`,
+        `Unknown target "${target}" for functionDir "${resolvedFunctionDirectory.originalPath}". Check the target field against shopify.extension.toml.${availableTargetsMessage}`,
       );
     }
 
@@ -506,7 +512,7 @@ export class RunService {
       return new RunFailure(
         'SHOPIFY_RUNNER_START_FAILED',
         'shopify-runner',
-        errorMessage,
+        `Shopify function-runner failed to start. Check that Shopify CLI is installed correctly and that the function build is valid. Original error: ${errorMessage}`,
       );
     }
 
@@ -514,7 +520,7 @@ export class RunService {
       return new RunFailure(
         'SHOPIFY_EXPORT_NOT_FOUND',
         'shopify-runner',
-        errorMessage,
+        `The configured export could not be found in the built function. Check the exportName field and the target export declared in shopify.extension.toml. Original error: ${errorMessage}`,
       );
     }
 
@@ -522,7 +528,7 @@ export class RunService {
       return new RunFailure(
         'SHOPIFY_OUTPUT_INVALID',
         'shopify-runner',
-        errorMessage,
+        `Shopify function-runner returned an invalid payload without an output field. Check the function result shape for the selected target. Original error: ${errorMessage}`,
       );
     }
 
@@ -530,14 +536,14 @@ export class RunService {
       return new RunFailure(
         'SHOPIFY_OUTPUT_INVALID',
         'shopify-runner',
-        errorMessage,
+        `Shopify function-runner returned malformed output. Check stdout noise and the function result JSON shape. Original error: ${errorMessage}`,
       );
     }
 
     return new RunFailure(
       'SHOPIFY_RUNNER_EXIT_FAILED',
       'shopify-runner',
-      errorMessage,
+      `Shopify function-runner exited with an error. Check the selected target, exportName, and built Wasm, then retry. Original error: ${errorMessage}`,
     );
   }
 
@@ -667,7 +673,7 @@ export class RunService {
       throw new RunFailure(
         'FUNCTION_DIR_NOT_FOUND',
         'shopify-config',
-        `functionDir does not exist: ${functionDir}`,
+        `functionDir does not exist: ${functionDir}. Update the functionDir field to point to a local Shopify function directory.`,
       );
     }
 
@@ -675,7 +681,7 @@ export class RunService {
       throw new RunFailure(
         'FUNCTION_DIR_NOT_DIRECTORY',
         'shopify-config',
-        `functionDir is not a directory: ${functionDir}`,
+        `functionDir is not a directory: ${functionDir}. Update the functionDir field to point to the extension folder, not a file.`,
       );
     }
   }

@@ -39,5 +39,5 @@ Then paste `input/product-discount.input.json` into the JSON editor and click `R
 ## Notes
 
 - This example is meant to validate the workbench, not replace a full Shopify app project.
-- It includes a prebuilt `dist/function.wasm` so a first real Shopify run can succeed without scaffolding a separate local sandbox.
+- It includes a prebuilt `dist/function.wasm`, so a first real Shopify run does not require `npm run build`.
 - Local timings remain diagnostics only.

@@ -154,6 +154,37 @@ export function RunResultsPanel({
             value={runResponse ? Object.keys(runResponse.output).length.toString() : "0"}
           />
         </div>
+
+        {benchmarkResult ? (
+          <div className="rounded-md border border-border bg-surface px-4 py-3">
+            <div className="text-xs font-medium uppercase tracking-[0.02em] text-muted">
+              Benchmark summary
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+              <Metric
+                label="Avg total"
+                value={formatDuration(benchmarkResult.summary.averageTotalMs)}
+              />
+              <Metric
+                label="Avg execute"
+                value={formatDuration(benchmarkResult.summary.averageExecutionMs)}
+              />
+              <Metric
+                label="Avg runner"
+                value={formatDuration(benchmarkResult.summary.averageRunnerMs ?? undefined)}
+              />
+              <Metric
+                label="Range"
+                value={`${formatDuration(benchmarkResult.summary.minTotalMs)} to ${formatDuration(benchmarkResult.summary.maxTotalMs)}`}
+              />
+            </div>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              {benchmarkResult.measuredRuns} measured run
+              {benchmarkResult.measuredRuns > 1 ? "s" : ""}; {benchmarkResult.warmupRuns} warm-up
+              {benchmarkResult.warmupRuns > 1 ? "s" : ""} excluded.
+            </p>
+          </div>
+        ) : null}
       </SidebarSection>
 
       <SidebarSection

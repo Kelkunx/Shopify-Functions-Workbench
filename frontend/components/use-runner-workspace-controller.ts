@@ -1,7 +1,10 @@
 "use client";
 
 import { formatTemplateInput } from "@/lib/function-templates";
-import { type SavedScenario } from "@/lib/saved-scenarios";
+import {
+  type SavedScenario,
+  type ScenarioBenchmarkSummary,
+} from "@/lib/saved-scenarios";
 import { formatJsonString } from "./runner-workspace.helpers";
 import { useRunOutputState } from "./runner/hooks/use-run-output-state";
 import { useRunnerExecution } from "./runner/hooks/use-runner-execution";
@@ -43,6 +46,7 @@ export function useRunnerWorkspaceController() {
     exportVisibleScenarios,
     importSavedScenariosFile,
     markScenarioUsed,
+    recordScenarioBenchmark,
     renameSavedScenario: renameStoredScenario,
     scenariosTransferFeedback,
     upsertSavedScenario,
@@ -66,6 +70,40 @@ export function useRunnerWorkspaceController() {
     currentTarget,
     currentWasmFile,
     jsonValidationError,
+    onRunComplete: (completedRunResponse) => {
+      if (!completedRunResponse.benchmark) {
+        return;
+      }
+
+      const trimmedScenarioName = currentScenarioName.trim();
+
+      if (!trimmedScenarioName) {
+        return;
+      }
+
+      const matchingScenario = visibleSavedScenarios.find(
+        (savedScenario) =>
+          savedScenario.name.toLowerCase() === trimmedScenarioName.toLowerCase(),
+      );
+
+      if (!matchingScenario) {
+        return;
+      }
+
+      const benchmarkSummary: ScenarioBenchmarkSummary = {
+        averageExecutionMs:
+          completedRunResponse.benchmark.summary.averageExecutionMs,
+        averageRunnerMs: completedRunResponse.benchmark.summary.averageRunnerMs,
+        averageTotalMs: completedRunResponse.benchmark.summary.averageTotalMs,
+        maxTotalMs: completedRunResponse.benchmark.summary.maxTotalMs,
+        measuredRuns: completedRunResponse.benchmark.measuredRuns,
+        minTotalMs: completedRunResponse.benchmark.summary.minTotalMs,
+        recordedAt: new Date().toISOString(),
+        warmupRuns: completedRunResponse.benchmark.warmupRuns,
+      };
+
+      recordScenarioBenchmark(matchingScenario.id, benchmarkSummary);
+    },
     runnerMode: activeRunnerMode,
   });
   const {
@@ -101,6 +139,18 @@ export function useRunnerWorkspaceController() {
 
     if (!trimmedScenarioName) {
       setRunRequestError("Scenario name is required.");
+      return;
+    }
+
+    const matchingScenario = visibleSavedScenarios.find(
+      (savedScenario) =>
+        savedScenario.name.toLowerCase() === trimmedScenarioName.toLowerCase(),
+    );
+
+    if (
+      matchingScenario &&
+      !window.confirm(`Overwrite scenario "${matchingScenario.name}"?`)
+    ) {
       return;
     }
 

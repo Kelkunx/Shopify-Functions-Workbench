@@ -306,6 +306,9 @@ describe('RunService', () => {
         source: 'shopify-config',
       }),
     ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Check the target field',
+    );
   });
 
   it('returns a specific error when functionDir does not exist', async () => {
@@ -322,6 +325,9 @@ describe('RunService', () => {
         source: 'shopify-config',
       }),
     ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Update the functionDir field to point to a local Shopify function directory.',
+    );
   });
 
   it('resolves repo-relative Shopify example paths when the backend runs from backend/', async () => {
@@ -406,6 +412,9 @@ describe('RunService', () => {
         source: 'shopify-config',
       }),
     ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Build the Shopify function or provide a Wasm override.',
+    );
   });
 
   it('returns a structured error when the Shopify export is not found', async () => {
@@ -440,6 +449,9 @@ describe('RunService', () => {
         source: 'shopify-runner',
       }),
     ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Check the exportName field and the target export declared in shopify.extension.toml.',
+    );
   });
 
   it('returns a structured error when the Shopify runner output is malformed', async () => {
@@ -474,6 +486,46 @@ describe('RunService', () => {
         source: 'shopify-runner',
       }),
     ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Check the function result shape for the selected target.',
+    );
+  });
+
+  it('returns an actionable error when the Shopify runner output cannot be parsed', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    runFunctionMock.mockResolvedValue({
+      error:
+        'Failed to parse function-runner output: Unexpected token N in JSON at position 0',
+      result: null,
+    });
+
+    const response = await service.runFunction({
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'SHOPIFY_OUTPUT_INVALID',
+        source: 'shopify-runner',
+      }),
+    ]);
+    expect(response.errorDetails[0]?.message).toContain(
+      'Check stdout noise and the function result JSON shape.',
+    );
   });
 
   it('returns benchmark results with warmup exclusion and aggregate timings', async () => {

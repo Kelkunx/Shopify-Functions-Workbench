@@ -1,0 +1,37 @@
+{
+  "cart": {
+    "deliveryGroups": [
+      {
+        "deliveryAddress": {
+          "provinceCode": "QC"
+        },
+        "deliveryOptions": [
+          {
+            "handle": "standard-qc",
+            "title": "Standard shipping"
+          },
+          {
+            "handle": "express-qc",
+            "title": "Express shipping"
+          }
+        ]
+      },
+      {
+        "deliveryAddress": {
+          "provinceCode": "ON"
+        },
+        "deliveryOptions": [
+          {
+            "handle": "standard-on",
+            "title": "Ontario shipping"
+          }
+        ]
+      }
+    ]
+  },
+  "deliveryCustomization": {
+    "metafield": {
+      "value": "{\"stateProvinceCode\":\"QC\",\"message\":\"Workbench local rename\"}"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "shopify-functions-workbench-cart-transform-example",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "function:info": "shopify app function info --path extensions/workbench-cart-transform --json"
+  },
+  "workspaces": [
+    "extensions/*"
+  ]
+}

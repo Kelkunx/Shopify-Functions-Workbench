@@ -1,0 +1,16 @@
+api_version = "2026-01"
+
+[[extensions]]
+handle = "workbench-delivery-customization"
+name = "Workbench delivery customization example"
+description = "Official example function for Shopify Functions Workbench"
+type = "function"
+
+  [[extensions.targeting]]
+  target = "purchase.delivery-customization.run"
+  input_query = "src/run.graphql"
+  export = "run"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"

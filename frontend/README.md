@@ -29,7 +29,7 @@ The frontend provides the workbench UI to:
 - `lib/function-templates.ts`: supported function types and sample payloads
 - `lib/saved-scenarios.ts`: browser-local scenario persistence helpers
 - `components/runner/hooks/`: workspace state and execution hooks
-- `../examples/shopify-product-discount/`: official Shopify mode validation example
+- `../examples/`: official Shopify mode validation examples
 
 ## Scripts
 
@@ -58,4 +58,4 @@ npm test
 - the desktop layout keeps setup on the left, the JSON editor in the center, and the latest result on the right
 - benchmark and saved scenarios are collapsed by default to reduce noise
 - output actions are rendered directly inside the output block instead of the section header
-- the recommended first real Shopify run uses `examples/shopify-product-discount/`
+- the recommended first real Shopify run uses the official examples in `examples/`

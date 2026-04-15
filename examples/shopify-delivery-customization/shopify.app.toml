@@ -1,0 +1,17 @@
+client_id = "shopify-functions-workbench-delivery-customization"
+name = "workbench-delivery-example"
+application_url = "https://shopify.dev/apps/default-app-home"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+include_config_on_deploy = false
+
+[webhooks]
+api_version = "2026-01"
+
+[access_scopes]
+scopes = ""
+
+[auth]
+redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]

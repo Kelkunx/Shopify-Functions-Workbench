@@ -1,12 +1,12 @@
 "use client";
 
 import { formatTemplateInput } from "@/lib/function-templates";
-import { type SavedScenario } from "@/lib/saved-fixtures";
+import { type SavedScenario } from "@/lib/saved-scenarios";
 import { formatJsonString } from "./runner-workspace.helpers";
 import { useRunOutputState } from "./runner/hooks/use-run-output-state";
 import { useRunnerExecution } from "./runner/hooks/use-runner-execution";
 import { useRunnerFormState } from "./runner/hooks/use-runner-form-state";
-import { useSavedFixturesStore } from "./runner/hooks/use-saved-fixtures-store";
+import { useSavedScenariosStore } from "./runner/hooks/use-saved-scenarios-store";
 
 export function useRunnerWorkspaceController() {
   const {
@@ -47,7 +47,7 @@ export function useRunnerWorkspaceController() {
     scenariosTransferFeedback,
     upsertSavedScenario,
     visibleSavedScenarios,
-  } = useSavedFixturesStore(activeRunnerMode);
+  } = useSavedScenariosStore(activeRunnerMode);
   const {
     activeExecutionKind,
     isRunInFlight,

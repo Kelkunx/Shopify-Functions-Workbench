@@ -1,0 +1,14 @@
+{
+  "name": "shopify-functions-workbench-example-app",
+  "private": true,
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "function:info": "shopify app function info --path extensions/workbench-product-discount --json"
+  },
+  "workspaces": [
+    "extensions/*"
+  ]
+}

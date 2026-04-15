@@ -1,5 +1,5 @@
 import type { FunctionType } from "@/lib/function-templates";
-import type { RunnerMode } from "@/lib/saved-fixtures";
+import type { RunnerMode } from "@/lib/saved-scenarios";
 
 export interface RunResponse {
   benchmark?: {

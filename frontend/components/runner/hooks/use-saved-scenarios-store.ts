@@ -2,17 +2,17 @@
 
 import { useMemo, useState } from "react";
 import {
-  loadSavedFixtures,
-  parseImportedSavedFixtures,
-  persistSavedFixtures,
-  serializeSavedFixturesExport,
+  loadSavedScenarios,
+  parseImportedSavedScenarios,
+  persistSavedScenarios,
+  serializeSavedScenariosExport,
   type RunnerMode,
   type SavedScenario,
-} from "@/lib/saved-fixtures";
+} from "@/lib/saved-scenarios";
 
-export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
+export function useSavedScenariosStore(activeRunnerMode: RunnerMode) {
   const [allSavedScenarios, setAllSavedScenarios] = useState<SavedScenario[]>(
-    () => loadSavedFixtures(),
+    () => loadSavedScenarios(),
   );
   const [scenariosTransferFeedback, setScenariosTransferFeedback] = useState("");
 
@@ -29,7 +29,8 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
       const existingScenarioIndex = currentSavedScenarios.findIndex(
         (currentSavedScenario) =>
           currentSavedScenario.runnerMode === savedScenario.runnerMode &&
-          currentSavedScenario.name.toLowerCase() === savedScenario.name.toLowerCase(),
+          currentSavedScenario.name.toLowerCase() ===
+            savedScenario.name.toLowerCase(),
       );
 
       const nextSavedScenarios =
@@ -44,9 +45,12 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
                   }
                 : currentSavedScenario,
             )
-          : [{ ...savedScenario, updatedAt: new Date().toISOString() }, ...currentSavedScenarios];
+          : [
+              { ...savedScenario, updatedAt: new Date().toISOString() },
+              ...currentSavedScenarios,
+            ];
 
-      persistSavedFixtures(nextSavedScenarios);
+      persistSavedScenarios(nextSavedScenarios);
 
       return nextSavedScenarios;
     });
@@ -73,7 +77,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
           : savedScenario,
       );
 
-      persistSavedFixtures(nextSavedScenarios);
+      persistSavedScenarios(nextSavedScenarios);
 
       return nextSavedScenarios;
     });
@@ -93,7 +97,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
           : savedScenario,
       );
 
-      persistSavedFixtures(nextSavedScenarios);
+      persistSavedScenarios(nextSavedScenarios);
 
       return nextSavedScenarios;
     });
@@ -105,7 +109,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
         (savedScenario) => savedScenario.id !== savedScenarioId,
       );
 
-      persistSavedFixtures(nextSavedScenarios);
+      persistSavedScenarios(nextSavedScenarios);
 
       return nextSavedScenarios;
     });
@@ -115,7 +119,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
 
   async function importSavedScenariosFile(importFile: File) {
     const importedText = await importFile.text();
-    const importedScenarios = parseImportedSavedFixtures(importedText);
+    const importedScenarios = parseImportedSavedScenarios(importedText);
 
     if (importedScenarios.length === 0) {
       setScenariosTransferFeedback("No valid scenarios were found in that file.");
@@ -133,7 +137,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
         ...currentSavedScenarios,
       ];
 
-      persistSavedFixtures(nextSavedScenarios);
+      persistSavedScenarios(nextSavedScenarios);
 
       return nextSavedScenarios;
     });
@@ -151,7 +155,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
       return;
     }
 
-    const exportContent = serializeSavedFixturesExport(visibleSavedScenarios);
+    const exportContent = serializeSavedScenariosExport(visibleSavedScenarios);
     const exportBlob = new Blob([exportContent], {
       type: "application/json;charset=utf-8",
     });
@@ -159,7 +163,7 @@ export function useSavedFixturesStore(activeRunnerMode: RunnerMode) {
     const downloadLink = window.document.createElement("a");
 
     downloadLink.href = exportUrl;
-    downloadLink.download = `shopify-functions-workbench-${activeRunnerMode}-fixtures.json`;
+    downloadLink.download = `shopify-functions-workbench-${activeRunnerMode}-scenarios.json`;
     downloadLink.click();
     window.URL.revokeObjectURL(exportUrl);
 

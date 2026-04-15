@@ -58,6 +58,7 @@ npm run test:e2e
 - `/run` can benchmark repeated runs by accepting `benchmarkIterations` and `benchmarkWarmup`
 - these timings reflect local machine overhead and are intended for local comparison, not as Shopify production guarantees
 - only run trusted Wasm locally; this backend is a local developer workflow, not a hardened security sandbox for arbitrary Wasm
+- the recommended end-to-end validation path is the official example in `examples/shopify-product-discount/`
 - backend-only benchmark helper from the repo root:
 
 ```bash

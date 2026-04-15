@@ -42,6 +42,11 @@ interface ShopifyExecutionResult {
   shopifyPhases: ShopifyRunPhaseTimings;
 }
 
+interface ResolvedFunctionDirectory {
+  originalPath: string;
+  resolvedPath: string;
+}
+
 class RunFailure extends Error {
   constructor(
     readonly code: RunErrorCode,
@@ -305,13 +310,16 @@ export class RunService {
     target: string;
     wasmFile?: UploadedWasmFile;
   }): Promise<ShopifyExecutionResult> {
+    const resolvedFunctionDirectory =
+      await this.resolveFunctionDirectory(functionDir);
     const directoryCheckStartTime = process.hrtime.bigint();
-    await this.assertDirectoryExists(functionDir);
+    await this.assertDirectoryExists(resolvedFunctionDirectory.resolvedPath);
     const directoryCheckMs = this.measureElapsedMs(directoryCheckStartTime);
 
     const functionInfoStartTime = process.hrtime.bigint();
-    const functionInfo =
-      await this.shopifyFunctionRunner.getFunctionInfo(functionDir);
+    const functionInfo = await this.shopifyFunctionRunner.getFunctionInfo(
+      resolvedFunctionDirectory.resolvedPath,
+    );
     const functionInfoMs = this.measureElapsedMs(functionInfoStartTime);
     const targetConfig = functionInfo.targeting[target];
     const queryPath = targetConfig?.inputQueryPath;
@@ -320,7 +328,7 @@ export class RunService {
       throw new RunFailure(
         'SHOPIFY_TARGET_NOT_FOUND',
         'shopify-config',
-        `Unknown target "${target}" for functionDir "${functionDir}".`,
+        `Unknown target "${target}" for functionDir "${resolvedFunctionDirectory.originalPath}".`,
       );
     }
 
@@ -604,6 +612,50 @@ export class RunService {
     this.directoryCheckCache.set(functionDir, directoryCheckPromise);
 
     return directoryCheckPromise;
+  }
+
+  private async resolveFunctionDirectory(
+    functionDir: string,
+  ): Promise<ResolvedFunctionDirectory> {
+    const trimmedFunctionDir = functionDir.trim();
+
+    if (path.isAbsolute(trimmedFunctionDir)) {
+      return {
+        originalPath: trimmedFunctionDir,
+        resolvedPath: trimmedFunctionDir,
+      };
+    }
+
+    const currentWorkingDirectory = process.cwd();
+    const candidateDirectories = [
+      path.resolve(currentWorkingDirectory, trimmedFunctionDir),
+    ];
+
+    if (path.basename(currentWorkingDirectory) === 'backend') {
+      candidateDirectories.push(
+        path.resolve(currentWorkingDirectory, '..', trimmedFunctionDir),
+      );
+    }
+
+    for (const candidateDirectory of candidateDirectories) {
+      try {
+        const stat = await fs.stat(candidateDirectory);
+
+        if (stat.isDirectory()) {
+          return {
+            originalPath: trimmedFunctionDir,
+            resolvedPath: candidateDirectory,
+          };
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return {
+      originalPath: trimmedFunctionDir,
+      resolvedPath: candidateDirectories[0],
+    };
   }
 
   private async validateDirectory(functionDir: string): Promise<void> {

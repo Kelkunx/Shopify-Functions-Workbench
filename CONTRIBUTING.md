@@ -46,11 +46,13 @@ npm run test:e2e
 - Preserve the existing `/run` contract unless a compatibility-preserving extension is not possible.
 - When adding timings, make clear whether they are local diagnostics or Shopify-runtime guarantees.
 - Only run trusted Wasm locally. This project is not a hardened sandbox for untrusted Wasm.
+- Keep the public vocabulary consistent: use `scenario` in UI, storage, and docs. Reserve `fixture` only for external dependency names you do not control.
 
-## Examples and fixtures
+## Examples and scenarios
 
 - Browser-saved scenarios are for local iteration and should not be committed as source-controlled truth by default.
-- A clean official example package can be added later; avoid committing ad hoc local sandboxes.
+- Use `examples/shopify-product-discount/` as the official real-runner validation path.
+- Do not commit ad hoc local sandboxes or personal Shopify app workspaces.
 
 ## Pull request expectations
 

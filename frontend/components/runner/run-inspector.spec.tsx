@@ -111,4 +111,29 @@ describe("RunInspector", () => {
     expect(screen.getByText("Measured avg")).toBeInTheDocument();
     expect(screen.getByText(/Warm-up 1/i)).toBeInTheDocument();
   });
+
+  it("shows Shopify as the runner mode when Shopify diagnostics are present", () => {
+    render(
+      <RunInspector
+        copyFeedback=""
+        onCopyOutput={() => undefined}
+        onExpandOutput={() => undefined}
+        runRequestError=""
+        runResponse={{
+          ...baseRunResponse,
+          diagnostics: {
+            ...baseRunResponse.diagnostics,
+            actualRunnerMode: "mock",
+          },
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show diagnostics" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText(/Runner mode:\s*shopify/i)).toBeInTheDocument();
+    expect(screen.getByText(/Requested mode:\s*shopify/i)).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 # Shopify Functions Workbench
 
-Open-source developer tool for testing Shopify Functions `.wasm` files locally without deploying to Shopify.
+Open-source local workbench for running, benchmarking, and debugging Shopify Functions before deployment.
 
 ## Screenshot
 
@@ -10,20 +10,63 @@ The project is organized as a simple monorepo:
 
 - `frontend/`: Next.js UI with Monaco Editor and Tailwind CSS
 - `backend/`: NestJS API exposing a local `/run` endpoint
+- `examples/`: official validation example packages
 
-## Goal
+## Quick Start
 
-The workbench is designed to shorten the Shopify Functions feedback loop:
+Requirements:
 
-- upload a `.wasm` file
-- paste or edit JSON input locally
-- execute through a local backend
-- inspect output JSON, execution time, and errors
+- Node.js 20+
+- npm
+- Shopify CLI for the real Shopify runner path
+
+Install and start the workbench from the repository root:
+
+```bash
+npm install
+npm run dev
+```
+
+This starts:
+
+- frontend on `http://localhost:3000`
+- backend on `http://localhost:3001`
+
+Open `http://localhost:3000` in the browser.
+
+The frontend calls the backend using:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+```
+
+If you need to override it, create a local `.env` file from `./.env.example`.
+
+## First Real Shopify Run
+
+Use the official example package in `examples/shopify-product-discount/`.
+
+In the UI:
+
+- switch to `Shopify`
+- `functionDir`: `examples/shopify-product-discount/extensions/workbench-product-discount`
+- `target`: `cart.lines.discounts.generate.run`
+- `exportName`: `run`
+- `inputJson`: paste `examples/shopify-product-discount/input/product-discount.input.json`
+
+Expected result:
+
+- `success: true`
+- one `productDiscountsAdd` operation
+- message `WORKBENCH PRODUCT TEST`
+- percentage `15`
+- target cart line `gid://shopify/CartLine/high`
 
 Security note:
 
 - only run trusted Wasm locally
 - the workbench is a local developer tool, not a hardened security sandbox for untrusted Wasm
+- local timings are diagnostics only and may differ from Shopify production runtime performance
 
 ## Current MVP Status
 
@@ -55,7 +98,7 @@ Current limitation:
 - mock mode still exists for DX and payload iteration
 - real Shopify execution requires a local function directory and target metadata
 - local timings are useful for comparison, not as Shopify production guarantees
-- the repo does not yet ship a clean versioned example function package
+- the repo currently ships one official example only; broader example coverage is still to come
 
 ## Tech Stack
 
@@ -67,6 +110,8 @@ Current limitation:
 
 ```text
 Shopify-Functions-Workbench/
+├── examples/
+│   └── shopify-product-discount/
 ├── backend/
 │   ├── src/
 │   └── test/
@@ -113,32 +158,7 @@ Response:
 }
 ```
 
-## Local Setup
-
-Requirements:
-
-- Node.js 20+
-- npm
-- Shopify CLI if you want to use the real Shopify runner path
-
-Install everything from the monorepo root:
-
-```bash
-npm install
-```
-
 ## Run Locally
-
-Start frontend and backend together:
-
-```bash
-npm run dev
-```
-
-This starts:
-
-- frontend on `http://localhost:3000`
-- backend on `http://localhost:3001`
 
 For a lighter development mode with lower memory pressure:
 
@@ -154,16 +174,6 @@ npm run dev:backend
 npm run dev:frontend:light
 npm run dev:backend:light
 ```
-
-Open `http://localhost:3000` in the browser.
-
-The frontend calls the backend using:
-
-```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
-```
-
-If not set, it defaults to `http://localhost:3001`.
 
 ## Runner Modes
 
@@ -186,13 +196,28 @@ Used when `functionDir` and `target` are provided.
 - an uploaded `.wasm` file overrides the built Wasm for that single run
 - only run trusted Wasm locally
 
+## Common Failures
+
+- `Both functionDir and target are required`:
+  you filled only one of the Shopify runner fields.
+- `Unknown target ...`:
+  the target does not exist in `shopify.extension.toml`.
+- `failed to find function export`:
+  the target export and the selected function build do not match.
+- `functionDir does not exist`:
+  the path is wrong or points to a deleted local directory.
+- `Wasm build was not found`:
+  the function directory exists, but the expected build output is missing.
+- `Input JSON is invalid`:
+  the JSON payload could not be parsed before execution.
+
 ## Scenarios
 
 - the UI can save named local scenarios to browser local storage
 - a scenario stores runner mode, function type, JSON input, Shopify runner fields, and benchmark defaults
 - saving reuses the same scenario name per mode as an overwrite path
 - scenarios can be renamed, deleted, exported as JSON, and imported on another machine or browser
-- legacy fixture storage from the old project name is migrated automatically in the browser
+- legacy scenario storage from the old project name is migrated automatically in the browser
 - scenarios are intended for fast local iteration, not source-controlled test cases
 
 ## Interface Notes
@@ -201,6 +226,11 @@ Used when `functionDir` and `target` are provided.
 - benchmark and saved scenarios are collapsed by default to keep the primary flow readable
 - output actions are available directly inside the output frame
 - detailed timings, benchmark breakdown, and Shopify diagnostics live behind the result drawer instead of the main inspector
+
+## Official Example
+
+- `examples/shopify-product-discount/README.md` is the recommended validation path for the real Shopify runner mode
+- the example includes a prebuilt `dist/function.wasm`, the source files, and a ready-to-run input payload
 
 ## Development Commands
 
@@ -258,6 +288,14 @@ npm test
 - Shopify mode still depends on local Shopify CLI metadata and a buildable local function directory
 - local benchmark numbers include machine, OS, and runner overhead
 - the workbench does not sandbox untrusted Wasm
+- the example package validates the workbench path, but it is not a full Shopify app template
+
+## Roadmap
+
+- expand real Shopify validation coverage and remediation messages
+- add more official example packages and scenario presets
+- keep improving benchmark UX without presenting local timings as production truth
+- continue hardening docs and contributor onboarding for external devs
 - mock mode is intentionally approximate and should not be treated as a Shopify-accurate runtime
 
 ## Roadmap

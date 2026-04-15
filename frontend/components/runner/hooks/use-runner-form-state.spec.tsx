@@ -21,7 +21,7 @@ describe("useRunnerFormState", () => {
         exportName: "run",
         functionDir: "/tmp/function",
         functionType: "custom",
-        id: "fixture-1",
+        id: "scenario-1",
         inputJson: "{\"cart\":{}}",
         lastUsedAt: null,
         name: "benchmark-scenario",

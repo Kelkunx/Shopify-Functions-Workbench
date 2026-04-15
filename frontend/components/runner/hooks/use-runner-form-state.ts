@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { getTemplatesForType, type FunctionType } from "@/lib/function-templates";
-import { type RunnerMode, type SavedScenario } from "@/lib/saved-fixtures";
+import { type RunnerMode, type SavedScenario } from "@/lib/saved-scenarios";
 import {
   getJsonValidationError,
   initialFunctionInputJson,

@@ -287,7 +287,7 @@ export function CodeBlock({
   return <pre className={codeBlockClassName}>{children}</pre>;
 }
 
-export function FixtureActionButton({
+export function ScenarioActionButton({
   children,
   className,
   tone = "default",

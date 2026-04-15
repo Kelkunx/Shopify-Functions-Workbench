@@ -1,12 +1,12 @@
 import { type ReactNode, useId, useRef, useState } from "react";
 import { functionTypes, type FunctionType } from "@/lib/function-templates";
-import type { RunnerMode, SavedScenario } from "@/lib/saved-fixtures";
+import type { RunnerMode, SavedScenario } from "@/lib/saved-scenarios";
 import type { RunResponse } from "../runner-workspace.types";
 import { formatTimestamp } from "../runner-workspace.helpers";
 import {
   EmptyState,
   Field,
-  FixtureActionButton as ScenarioActionButton,
+  ScenarioActionButton,
   InlineNote,
   SecondaryButton,
   SelectInput,

@@ -65,6 +65,9 @@ export function RunDetailsDrawer({
 }) {
   const benchmarkResult = runResponse?.benchmark;
   const shopifyDiagnostics = runResponse?.diagnostics.shopify;
+  const displayedRunnerMode = shopifyDiagnostics
+    ? "shopify"
+    : runResponse?.diagnostics.actualRunnerMode;
 
   return (
     <div
@@ -75,7 +78,7 @@ export function RunDetailsDrawer({
     >
       <div className="hidden flex-1 lg:block" />
       <div
-        className="flex h-full w-full flex-col border-l border-border bg-surface-strong lg:max-w-[420px]"
+        className="flex h-full w-full flex-col border-l border-border bg-surface-strong lg:max-w-105"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
@@ -139,7 +142,8 @@ export function RunDetailsDrawer({
           <DetailSection defaultOpen={false} description="Runner and Shopify metadata." title="Diagnostics">
             {runResponse ? (
               <div className="space-y-2 text-sm text-foreground">
-                <div>Runner mode: {runResponse.diagnostics.actualRunnerMode}</div>
+                <div>Runner mode: {displayedRunnerMode}</div>
+                <div>Requested mode: {runResponse.diagnostics.requestedRunnerMode}</div>
                 <div>
                   Benchmark: {runResponse.diagnostics.benchmarkEnabled ? "enabled" : "off"}
                 </div>

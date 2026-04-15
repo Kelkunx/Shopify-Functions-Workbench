@@ -308,6 +308,140 @@ describe('RunService', () => {
     ]);
   });
 
+  it('returns a specific error when functionDir does not exist', async () => {
+    const response = await service.runFunction({
+      functionDir: '/tmp/does-not-exist-workbench',
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'FUNCTION_DIR_NOT_FOUND',
+        source: 'shopify-config',
+      }),
+    ]);
+  });
+
+  it('resolves repo-relative Shopify example paths when the backend runs from backend/', async () => {
+    jest.spyOn(process, 'cwd').mockReturnValue('/tmp/workbench/backend');
+    jest.spyOn(fs, 'stat').mockImplementation((filePath) => {
+      if (
+        filePath ===
+        '/tmp/workbench/examples/shopify-product-discount/extension'
+      ) {
+        return Promise.resolve({
+          isDirectory: () => true,
+          isFile: () => false,
+        } as Stats);
+      }
+
+      if (filePath === '/tmp/function.wasm') {
+        return Promise.resolve({
+          isDirectory: () => false,
+          isFile: () => true,
+        } as Stats);
+      }
+
+      return actualFsStat(filePath);
+    });
+
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'cart.lines.discounts.generate.run': {
+          export: 'run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    runFunctionMock.mockResolvedValue({
+      error: null,
+      result: {
+        output: {
+          operations: [],
+        },
+      },
+    });
+
+    const response = await service.runFunction({
+      functionDir: 'examples/shopify-product-discount/extension',
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'cart.lines.discounts.generate.run',
+    });
+
+    expect(response.success).toBe(true);
+    expect(getFunctionInfoMock).toHaveBeenCalledWith(
+      '/tmp/workbench/examples/shopify-product-discount/extension',
+    );
+  });
+
+  it('returns a specific error when the built Shopify wasm is missing', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/missing-function.wasm',
+    });
+
+    const response = await service.runFunction({
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'SHOPIFY_WASM_NOT_FOUND',
+        source: 'shopify-config',
+      }),
+    ]);
+  });
+
+  it('returns a structured error when the Shopify export is not found', async () => {
+    getFunctionInfoMock.mockResolvedValue({
+      functionRunnerPath: '/tmp/function-runner',
+      schemaPath: '/tmp/schema.graphql',
+      targeting: {
+        'purchase.product-discount.run': {
+          export: 'purchase-product-discount-run',
+          inputQueryPath: '/tmp/input.graphql',
+        },
+      },
+      wasmPath: '/tmp/function.wasm',
+    });
+
+    runFunctionMock.mockResolvedValue({
+      error:
+        'function-runner failed with exit code 1: Error: failed to find function export `purchase-product-discount-run`',
+      result: null,
+    });
+
+    const response = await service.runFunction({
+      functionDir: __dirname,
+      inputJson: JSON.stringify({ cart: { lines: [] } }),
+      target: 'purchase.product-discount.run',
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.errorDetails).toEqual([
+      expect.objectContaining({
+        code: 'SHOPIFY_EXPORT_NOT_FOUND',
+        source: 'shopify-runner',
+      }),
+    ]);
+  });
+
   it('returns a structured error when the Shopify runner output is malformed', async () => {
     getFunctionInfoMock.mockResolvedValue({
       functionRunnerPath: '/tmp/function-runner',

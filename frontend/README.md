@@ -17,6 +17,7 @@ The frontend provides the workbench UI to:
 - call the local backend runner
 - inspect output, errors, and execution time
 - open a details drawer for local phase timings, benchmark breakdowns, and diagnostics
+- validate the real Shopify runner path with the official example package
 
 ## Main Files
 
@@ -26,8 +27,9 @@ The frontend provides the workbench UI to:
 - `components/runner/run-details-drawer.tsx`: detailed timings, diagnostics, and benchmark breakdowns
 - `components/json-editor.tsx`: Monaco wrapper
 - `lib/function-templates.ts`: supported function types and sample payloads
-- `lib/saved-fixtures.ts`: browser-local fixture persistence helpers
+- `lib/saved-scenarios.ts`: browser-local scenario persistence helpers
 - `components/runner/hooks/`: workspace state and execution hooks
+- `../examples/shopify-product-discount/`: official Shopify mode validation example
 
 ## Scripts
 
@@ -56,3 +58,4 @@ npm test
 - the desktop layout keeps setup on the left, the JSON editor in the center, and the latest result on the right
 - benchmark and saved scenarios are collapsed by default to reduce noise
 - output actions are rendered directly inside the output block instead of the section header
+- the recommended first real Shopify run uses `examples/shopify-product-discount/`

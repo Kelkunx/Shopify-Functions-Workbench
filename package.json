@@ -1,6 +1,17 @@
 {
   "name": "shopify-functions-workbench",
+  "description": "Open-source local workbench for running and debugging Shopify Functions.",
+  "author": "Kelkunx",
+  "license": "MIT",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kelkunx/Shopify-Functions-Workbench.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kelkunx/Shopify-Functions-Workbench/issues"
+  },
+  "homepage": "https://github.com/Kelkunx/Shopify-Functions-Workbench#readme",
   "workspaces": [
     "backend",
     "frontend"

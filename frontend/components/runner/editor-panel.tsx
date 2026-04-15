@@ -1,4 +1,4 @@
-import type { RunnerMode } from "@/lib/saved-fixtures";
+import type { RunnerMode } from "@/lib/saved-scenarios";
 import { JsonEditor } from "../json-editor";
 import {
   InlineNote,
